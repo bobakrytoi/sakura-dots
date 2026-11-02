@@ -1,0 +1,9 @@
+[Desktop Entry]
+Type=Application
+Name=Color Control
+GenericName=Display color settings
+Comment=Digital vibrance, contrast, brightness, gamma and night light
+Exec=qs ipc call settings open color
+Icon=preferences-color
+Categories=Settings;
+Keywords=vibrance;color;nvidia;saturation;gamma;night;

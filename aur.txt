@@ -1,0 +1,4 @@
+cbonsai
+mullvad-vpn-bin
+pipes.sh
+yay-bin

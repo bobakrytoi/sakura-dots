@@ -1,0 +1,12 @@
+[SddmGreeterTheme]
+Name=Sakura
+Description=sakura mono login theme
+Author=bobakrytoi
+Type=sddm-theme
+Version=1.0
+MainScript=Main.qml
+ConfigFile=theme.conf
+Screenshot=background.jpg
+QtVersion=6
+Theme-Id=sakura
+Theme-API=2.0

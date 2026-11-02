@@ -1,0 +1,17 @@
+@import "config.rasi"
+window   { width: 720px; height: 470px; }
+mainbox  { orientation: vertical; children: [ imagebox, listbox ]; }
+imagebox {
+    expand: false; padding: 92px 20px 16px 20px;
+    background-image: url("~/.config/rofi/images/share.jpg", width);
+    border-radius: 22px 22px 0 0;
+    children: [ textbox-title ];
+}
+textbox-title {
+    expand: false; content: "Share your screen";
+    background-color: #0f1119b3; text-color: @fg; padding: 6px 12px; border-radius: 10px;
+    font: "Inter Bold 13";
+}
+listbox  { children: [ listview ]; }
+listview { lines: 6; }
+element-icon { size: 30px; }

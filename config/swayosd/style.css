@@ -1,0 +1,11 @@
+window#osd {
+  background: rgba(15, 17, 25, 0.80);
+  border: 1px solid rgba(255,255,255,0.10);
+  border-radius: 999px;
+  padding: 12px 20px;
+}
+window#osd #container { margin: 6px; }
+window#osd image, window#osd label { color: #eceef4; }
+window#osd progressbar, window#osd segmentedprogress { min-height: 6px; border-radius: 999px; }
+window#osd trough { background: rgba(255,255,255,0.12); border-radius: 999px; min-height: 6px; }
+window#osd progress { background: #f2b8d0; border-radius: 999px; min-height: 6px; }

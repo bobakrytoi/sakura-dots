@@ -1,0 +1,208 @@
+{
+  "layer": "top",
+  "position": "top",
+  "height": 40,
+  "margin-top": 8,
+  "margin-left": 14,
+  "margin-right": 14,
+  "spacing": 8,
+  "reload_style_on_change": true,
+  "modules-left": [
+    "custom/launcher",
+    "wlr/taskbar",
+    "custom/minimized"
+  ],
+  "modules-center": [
+    "clock"
+  ],
+  "modules-right": [
+    "custom/capture",
+    "image#cover",
+    "mpris",
+    "tray",
+    "custom/layout",
+    "pulseaudio",
+    "network",
+    "cpu",
+    "memory",
+    "custom/notify",
+    "custom/power"
+  ],
+  "custom/launcher": {
+    "format": "",
+    "tooltip": false,
+    "on-click": "__HOME__/.config/hypr/scripts/menu.sh"
+  },
+  "hyprland/workspaces": {
+    "format": "{name}",
+    "on-click": "activate",
+    "all-outputs": false,
+    "persistent-workspaces": {
+      "DP-3": [
+        1,
+        2,
+        3,
+        4,
+        5
+      ],
+      "DP-1": [
+        6,
+        7,
+        8,
+        9,
+        10
+      ]
+    },
+    "on-scroll-up": "hyprctl dispatch 'hl.dsp.focus({workspace=\"e-1\"})'",
+    "on-scroll-down": "hyprctl dispatch 'hl.dsp.focus({workspace=\"e+1\"})'"
+  },
+  "wlr/taskbar": {
+    "format": "{icon}",
+    "icon-size": 20,
+    "icon-theme": "Papirus-Dark",
+    "tooltip-format": "{title}",
+    "on-click": "minimize-raise",
+    "on-click-middle": "close",
+    "on-click-right": "minimize-raise",
+    "all-outputs": false,
+    "sort-by-app-id": false
+  },
+  "clock": {
+    "format": "<b>{:%H:%M}</b>",
+    "tooltip-format": "<b>{:%A, %d %B %Y}</b>\nclick: dashboard · calendar · weather",
+    "calendar": {
+      "mode": "month",
+      "weeks-pos": "",
+      "on-scroll": 1,
+      "format": {
+        "months": "<span color='#f2b8d0'><b>{}</b></span>",
+        "days": "<span color='#eceef4'>{}</span>",
+        "weekdays": "<span color='#8a8fa3'>{}</span>",
+        "today": "<span color='#f2b8d0'><b><u>{}</u></b></span>"
+      }
+    },
+    "actions": {
+      "on-scroll-up": "shift_up",
+      "on-scroll-down": "shift_down"
+    },
+    "on-click": "qs ipc call dashboard toggle"
+  },
+  "mpris": {
+    "format": "{status_icon}  {dynamic}",
+    "format-paused": "{status_icon}  <i>{dynamic}</i>",
+    "dynamic-order": [
+      "title",
+      "artist"
+    ],
+    "dynamic-separator": "  ·  ",
+    "dynamic-len": 48,
+    "status-icons": {
+      "playing": "",
+      "paused": "",
+      "stopped": ""
+    },
+    "ignored-players": [
+      "playerctld"
+    ],
+    "on-click": "qs ipc call media toggle",
+    "on-click-middle": "playerctl play-pause",
+    "on-scroll-up": "playerctl previous",
+    "on-scroll-down": "playerctl next",
+    "tooltip-format": "{player}: {artist} — {title}\nclick: player card · middle: pause · scroll: prev/next",
+    "dynamic-importance-order": [
+      "title",
+      "artist"
+    ]
+  },
+  "tray": {
+    "icon-size": 17,
+    "spacing": 10
+  },
+  "pulseaudio": {
+    "format": "<span rise='-500'>{icon}</span>  {volume}%",
+    "format-muted": "<span rise='-500'></span>  mute",
+    "format-icons": {
+      "default": [
+        "",
+        "",
+        ""
+      ]
+    },
+    "on-click": "qs ipc call mixer toggle",
+    "on-click-right": "wpctl set-mute @DEFAULT_AUDIO_SINK@ toggle",
+    "scroll-step": 5
+  },
+  "network": {
+    "format-wifi": "  {essid}",
+    "format-ethernet": "󰈀  online",
+    "format-disconnected": "󰲛  offline",
+    "tooltip-format": "{ifname} · {ipaddr}\n↓ {bandwidthDownBytes}  ↑ {bandwidthUpBytes}",
+    "on-click": "nm-connection-editor",
+    "interval": 3
+  },
+  "cpu": {
+    "format": "  {usage}%",
+    "interval": 3,
+    "on-click": "kitty --class btop -e btop"
+  },
+  "memory": {
+    "format": "  {percentage}%",
+    "interval": 5,
+    "tooltip-format": "{used:0.1f} / {total:0.1f} GB",
+    "on-click": "kitty --class btop -e btop"
+  },
+  "custom/notify": {
+    "tooltip": false,
+    "format": "{icon}",
+    "format-icons": {
+      "notification": "<sup>●</sup>",
+      "none": "",
+      "dnd-notification": "<sup>●</sup>",
+      "dnd-none": "",
+      "inhibited-notification": "",
+      "inhibited-none": "",
+      "dnd-inhibited-notification": "",
+      "dnd-inhibited-none": ""
+    },
+    "return-type": "json",
+    "exec-if": "which swaync-client",
+    "exec": "swaync-client -swb",
+    "on-click": "swaync-client -t -sw",
+    "on-click-right": "swaync-client -d -sw",
+    "escape": true
+  },
+  "custom/power": {
+    "format": "",
+    "tooltip": false,
+    "on-click": "__HOME__/.config/hypr/scripts/powermenu.sh"
+  },
+  "custom/minimized": {
+    "exec": "__HOME__/.config/hypr/scripts/minimize.sh count",
+    "return-type": "json",
+    "interval": 2,
+    "signal": 8,
+    "on-click": "__HOME__/.config/hypr/scripts/minimize.sh restore"
+  },
+  "custom/capture": {
+    "exec": "__HOME__/.config/hypr/scripts/capture.sh status",
+    "return-type": "json",
+    "interval": 1,
+    "signal": 9,
+    "on-click": "qs ipc call capture toggle",
+    "tooltip": true
+  },
+  "image#cover": {
+    "exec": "__HOME__/.config/hypr/scripts/cover.sh",
+    "size": 24,
+    "interval": 2,
+    "on-click": "qs ipc call media toggle",
+    "tooltip": false
+  },
+  "custom/layout": {
+    "exec": "python3 -I __HOME__/.config/hypr/scripts/layout.py",
+    "return-type": "json",
+    "restart-interval": 3,
+    "on-click": "hyprctl switchxkblayout all next",
+    "tooltip": true
+  }
+}

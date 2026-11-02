@@ -1,0 +1,45 @@
+# sakura mono boot splash
+Window.SetBackgroundTopColor(0.06, 0.07, 0.10);
+Window.SetBackgroundBottomColor(0.06, 0.07, 0.10);
+
+W = Window.GetWidth(); H = Window.GetHeight();
+
+bg_img = Image("background.png").Scale(W, H);
+bg = Sprite(bg_img); bg.SetZ(-10); bg.SetPosition(0, 0, -10);
+
+logo_img = Image("logo.png");
+logo = Sprite(logo_img);
+logo.SetX(W / 2 - logo_img.GetWidth() / 2);
+logo.SetY(H / 2 - logo_img.GetHeight() / 2 - 40);
+logo.SetOpacity(0);
+
+dot_img = Image("dot.png");
+for (i = 0; i < 3; i++) {
+    dots[i] = Sprite(dot_img);
+    dots[i].SetX(W / 2 - 34 + i * 28 - dot_img.GetWidth() / 2);
+    dots[i].SetY(H / 2 + logo_img.GetHeight() / 2 + 10);
+    dots[i].SetOpacity(0.2);
+}
+
+t = 0;
+fun refresh() {
+    t++;
+    # logo fades in
+    a = t / 60; if (a > 1) a = 1;
+    logo.SetOpacity(a);
+    # three dots pulse one after another
+    for (i = 0; i < 3; i++) {
+        p = Math.Sin((t / 9) - i * 0.9);
+        dots[i].SetOpacity(0.25 + 0.75 * (p * 0.5 + 0.5));
+    }
+}
+Plymouth.SetRefreshFunction(refresh);
+
+# password prompt (only used if the disk is encrypted)
+fun display_password(prompt, bullets) {
+    s = ""; for (i = 0; i < bullets; i++) s += "•";
+    msg = Image.Text(prompt + "  " + s, 0.93, 0.93, 0.96);
+    pw.SetImage(msg); pw.SetX(W / 2 - msg.GetWidth() / 2); pw.SetY(H / 2 + 140);
+}
+pw = Sprite();
+Plymouth.SetDisplayPasswordFunction(display_password);

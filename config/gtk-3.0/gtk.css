@@ -1,0 +1,22 @@
+/* sakura mono */
+@define-color accent_color       #f2b8d0;
+@define-color accent_bg_color    #f2b8d0;
+@define-color accent_fg_color    #1a121a;
+@define-color window_bg_color    #11131b;
+@define-color window_fg_color    #eceef4;
+@define-color view_bg_color      #0f1119;
+@define-color view_fg_color      #eceef4;
+@define-color headerbar_bg_color #151824;
+@define-color headerbar_fg_color #eceef4;
+@define-color headerbar_backdrop_color #11131b;
+@define-color sidebar_bg_color   #141722;
+@define-color sidebar_fg_color   #eceef4;
+@define-color sidebar_backdrop_color #121520;
+@define-color secondary_sidebar_bg_color #121520;
+@define-color card_bg_color      rgba(255,255,255,0.05);
+@define-color card_fg_color      #eceef4;
+@define-color popover_bg_color   #1a1d28;
+@define-color popover_fg_color   #eceef4;
+@define-color dialog_bg_color    #1a1d28;
+@define-color dialog_fg_color    #eceef4;
+@define-color thumbnail_bg_color #1a1d28;

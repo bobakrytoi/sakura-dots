@@ -1,0 +1,76 @@
+@define-color bg      rgba(15, 17, 25, 0.78);
+@define-color card    rgba(255, 255, 255, 0.06);
+@define-color hover   rgba(255, 255, 255, 0.12);
+@define-color border  rgba(255, 255, 255, 0.10);
+@define-color fg      #eceef4;
+@define-color muted   #8a8fa3;
+@define-color accent  #f2b8d0;
+
+* { font-family: "Inter", "Symbols Nerd Font"; font-size: 13px; }
+
+.control-center {
+  background: @bg;
+  border: 1px solid @border;
+  border-radius: 22px;
+  padding: 14px;
+  color: @fg;
+}
+.control-center .notification-row .notification-background,
+.notification-row .notification-background {
+  background: transparent;
+  padding: 4px 0;
+}
+.notification {
+  background: @bg;
+  border: 1px solid @border;
+  border-radius: 18px;
+  padding: 10px;
+  color: @fg;
+}
+.control-center .notification { background: @card; border: none; }
+.notification .summary   { font-weight: 700; color: @fg; }
+.notification .time      { color: @muted; font-size: 11px; margin-right: 24px; }
+.notification .body      { color: #c9ccd8; }
+.notification.critical   { border: 1px solid @accent; }
+.notification .image     { border-radius: 12px; margin-right: 10px; }
+.notification-action, .notification-default-action { border-radius: 14px; }
+.notification-default-action:hover, .notification-action:hover { background: @hover; }
+.close-button {
+  background: @card; color: @fg; border-radius: 99px;
+  min-width: 22px; min-height: 22px; margin: 6px;
+}
+.close-button:hover { background: @accent; color: #1a121a; }
+
+.widget-title { margin: 4px 6px 10px 6px; }
+.widget-title > label { font-size: 18px; font-weight: 800; color: @fg; }
+.widget-title > button {
+  background: @card; color: @fg; border-radius: 12px; padding: 4px 12px; border: none;
+}
+.widget-title > button:hover { background: @accent; color: #1a121a; }
+
+.widget-buttons-grid { padding: 6px; margin-bottom: 8px; background: @card; border-radius: 18px; }
+.widget-buttons-grid > flowbox > flowboxchild > button {
+  background: transparent; color: @fg; border-radius: 14px; min-height: 48px; min-width: 48px;
+  font-size: 18px; border: none; transition: all 0.2s ease;
+}
+.widget-buttons-grid > flowbox > flowboxchild > button:hover { background: @accent; color: #1a121a; }
+
+.widget-volume { background: @card; border-radius: 16px; padding: 8px 14px; margin-bottom: 8px; }
+.widget-volume trough { background: rgba(255,255,255,0.1); border-radius: 99px; min-height: 6px; }
+.widget-volume highlight { background: @accent; border-radius: 99px; }
+.widget-volume slider { background: #ffffff; border-radius: 99px; min-width: 14px; min-height: 14px; }
+
+.widget-mpris .widget-mpris-player {
+  background: @card; border-radius: 18px; padding: 10px; margin-bottom: 8px;
+}
+.widget-mpris .widget-mpris-title    { font-weight: 700; }
+.widget-mpris .widget-mpris-subtitle { color: @muted; }
+.widget-mpris button { border-radius: 99px; background: transparent; color: @fg; }
+.widget-mpris button:hover { background: @hover; }
+
+.widget-dnd { background: @card; border-radius: 16px; padding: 8px 14px; margin-bottom: 8px; }
+.widget-dnd > switch { background: rgba(255,255,255,0.12); border-radius: 99px; }
+.widget-dnd > switch:checked { background: @accent; }
+.widget-dnd > switch slider { background: #ffffff; border-radius: 99px; }
+
+.blank-window { background: transparent; }

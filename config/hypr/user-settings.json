@@ -1,0 +1,23 @@
+{
+  "blur": true,
+  "animations": true,
+  "dim": true,
+  "gaps_in": 6,
+  "gaps_out": 10,
+  "rounding": 5,
+  "border": 2,
+  "inactive_opacity": 1,
+  "sensitivity": 0,
+  "kb_toggle": "grp:alt_shift_toggle",
+  "screenOff": 0,
+  "lockAfter": 60,
+  "suspendAfter": 0,
+  "sounds": true,
+  "vibrance": 1,
+  "contrast": 0.14,
+  "warmth": 0,
+  "brightness": 0.01,
+  "gamma": 1.27,
+  "shaderSlot": "a",
+  "wobble": true
+}

@@ -1,0 +1,16 @@
+{
+  "replaySeconds": 300,
+  "fps": 60,
+  "quality": "high",
+  "audio": "desktop+mic",
+  "monitor": "focused",
+  "folder": "/mnt/HDD-2TB/VIDS",
+  "replayAutostart": true,
+  "hotkeys": {
+    "menu": "ALT + Z",
+    "replaySave": "ALT + SHIFT + F10",
+    "replayToggle": "ALT + SHIFT + F9",
+    "record": "ALT + F9",
+    "screenshot": "ALT + F1"
+  }
+}

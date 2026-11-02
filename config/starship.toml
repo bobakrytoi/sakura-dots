@@ -1,0 +1,28 @@
+# ✿ sakura mono — starship
+format = """$directory$git_branch$git_status$cmd_duration
+$character"""
+add_newline = true
+
+[directory]
+style = "bold #f2b8d0"
+format = "[ $path]($style) "
+truncation_length = 3
+truncation_symbol = "…/"
+
+[git_branch]
+symbol = " "
+style = "#a9b8f0"
+format = "[$symbol$branch]($style) "
+
+[git_status]
+style = "#8a8fa3"
+format = "[$all_status$ahead_behind]($style) "
+
+[cmd_duration]
+min_time = 1500
+style = "#8a8fa3"
+format = "[ $duration]($style)"
+
+[character]
+success_symbol = "[❯](bold #f2b8d0)"
+error_symbol = "[❯](bold #f28fad)"
