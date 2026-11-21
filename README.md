@@ -4,7 +4,12 @@ My Arch + Hyprland setup. The whole desktop (bar, dock, start menu, notification
 settings app and so on) is written in Quickshell, there is no waybar or swaync anymore.
 Colors follow the wallpaper.
 
-![screenshot](images/screenshot.png)
+![desktop](images/desktop.webp)
+
+Dashboard (click the clock) and the edge drum on the left side:
+
+![dashboard](images/dashboard.webp)
+![edge drum](images/edge-drum.webp)
 
 Made for Hyprland 0.57 with the Lua config and quickshell 0.3. I run it on two 1080p monitors with an
 NVIDIA card, other setups should work but I haven't tested much.
