@@ -1,0 +1,2 @@
+# optional, the VPN page and tray helper use it
+mullvad-vpn-bin

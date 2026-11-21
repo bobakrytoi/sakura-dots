@@ -1,0 +1,77 @@
+# compositor
+hyprland
+hypridle
+hyprlock
+hyprpicker
+hyprpolkitagent
+xdg-desktop-portal-hyprland
+xdg-desktop-portal-gtk
+uwsm
+# shell
+quickshell
+qt6-wayland
+qt5-wayland
+qt6-multimedia
+qt6-multimedia-ffmpeg
+qt6-5compat
+qt6ct
+kvantum
+# apps and tools the shell calls
+kitty
+rofi
+swayosd
+fastfetch
+starship
+awww
+cava
+pipewire-pulse
+wireplumber
+playerctl
+brightnessctl
+libnotify
+networkmanager
+network-manager-applet
+nm-connection-editor
+cliphist
+wl-clipboard
+grim
+slurp
+satty
+imagemagick
+ffmpeg
+ffmpegthumbnailer
+libheif
+ghostscript
+socat
+zenity
+python-gobject
+gnome-keyring
+libsecret
+dolphin
+7zip
+unzip
+zip
+# music player
+mpv
+mpv-mpris
+yt-dlp
+# capture, rgb, mic, ocr
+gpu-screen-recorder
+openrgb
+lsp-plugins-lv2
+swh-plugins
+noise-suppression-for-voice
+tesseract
+# look
+inter-font
+noto-fonts
+noto-fonts-cjk
+noto-fonts-emoji
+ttf-jetbrains-mono-nerd
+ttf-nerd-fonts-symbols
+papirus-icon-theme
+adw-gtk-theme
+# login + boot
+sddm
+xorg-xrandr
+plymouth
