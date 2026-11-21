@@ -1,0 +1,280 @@
+{
+  "lang": "en",
+  "clock24": true,
+  "seconds": false,
+  "units": "c",
+  "weekStart": 1,
+  "widgets": [
+    {
+      "scale": 1,
+      "id": "greeting",
+      "on": true,
+      "x": 64,
+      "y": 96
+    },
+    {
+      "scale": 1,
+      "id": "clock",
+      "on": true,
+      "x": 64,
+      "y": 140,
+      "style": "big"
+    },
+    {
+      "scale": 1,
+      "id": "date",
+      "on": true,
+      "x": 64,
+      "y": 304
+    },
+    {
+      "scale": 1,
+      "id": "weather",
+      "on": true,
+      "x": 64,
+      "y": 346
+    },
+    {
+      "scale": 1.2667,
+      "id": "calendar",
+      "on": false,
+      "x": 960,
+      "y": 320,
+      "style": "compact"
+    },
+    {
+      "scale": 1,
+      "id": "forecast",
+      "on": false,
+      "x": 1056,
+      "y": 416
+    },
+    {
+      "scale": 1,
+      "id": "dayprogress",
+      "on": true,
+      "x": 1476,
+      "y": 378,
+      "style": "rings"
+    },
+    {
+      "scale": 1,
+      "id": "player",
+      "on": true,
+      "x": 64,
+      "y": 888
+    },
+    {
+      "scale": 1.1176,
+      "id": "hardware",
+      "on": true,
+      "x": 1476,
+      "y": 836
+    },
+    {
+      "scale": 1.0667,
+      "id": "worldclock",
+      "on": false,
+      "x": 1536,
+      "y": 96,
+      "mon": ""
+    },
+    {
+      "scale": 1,
+      "id": "visualizer",
+      "on": true,
+      "x": 64,
+      "y": 704,
+      "style": "bars",
+      "mon": ""
+    },
+    {
+      "scale": 1,
+      "id": "screentime",
+      "on": true,
+      "x": 1536,
+      "y": 160,
+      "style": "week",
+      "mon": ""
+    },
+    {
+      "scale": 1,
+      "id": "analog",
+      "on": false,
+      "x": 1656,
+      "y": 96,
+      "style": "minimal",
+      "mon": ""
+    },
+    {
+      "scale": 1,
+      "id": "sysmon",
+      "on": false,
+      "x": 896,
+      "y": 384
+    },
+    {
+      "scale": 1,
+      "id": "note",
+      "on": false,
+      "x": 1560,
+      "y": 600
+    },
+    {
+      "scale": 1,
+      "id": "todo",
+      "on": false,
+      "x": 1180,
+      "y": 130
+    },
+    {
+      "scale": 1.1,
+      "id": "timer",
+      "on": false,
+      "x": 1536,
+      "y": 128
+    },
+    {
+      "scale": 1,
+      "id": "user",
+      "on": false,
+      "x": 70,
+      "y": 720
+    }
+  ],
+  "menu": {
+    "banner": true,
+    "pinned": true,
+    "pinnedRows": 2,
+    "volume": true,
+    "toggles": true,
+    "shortcuts": true,
+    "media": true,
+    "user": true,
+    "toggleList": [
+      "dnd",
+      "color",
+      "clipboard",
+      "screenshot",
+      "night"
+    ],
+    "shortcutList": [
+      "sound",
+      "display",
+      "network",
+      "appearance",
+      "input",
+      "about"
+    ],
+    "powerList": [
+      "lock",
+      "logout",
+      "sleep",
+      "restart",
+      "shutdown"
+    ]
+  },
+  "wallpaper": "__HOME__/Pictures/Wallpapers/main.jpg",
+  "accent": "#aad2ee",
+  "accentAuto": true,
+  "deskGrid": 32,
+  "wallDir": "~/Pictures/Wallpapers",
+  "dnd": false,
+  "lockScreen": "sakura",
+  "font": "Inter",
+  "corners": {
+    "tl": "convert",
+    "bl": "none"
+  },
+  "swTitles": true,
+  "swStyle": "previews",
+  "barWheel": "volume",
+  "animSpeed": 1,
+  "volStep": 5,
+  "avatarRev": 2,
+  "islandItems": [
+    "power",
+    "layout",
+    "night",
+    "devices",
+    "dnd",
+    "volume"
+  ],
+  "barLeft": [
+    "barpos",
+    "launcher",
+    "tray",
+    "windows",
+    "minimized"
+  ],
+  "islandSize": "s",
+  "barRight": [
+    "capture",
+    "network",
+    "cpu",
+    "ram",
+    "updates",
+    "notify"
+  ],
+  "islandOn": true,
+  "wallTransition": "grow",
+  "mascotChaos": true,
+  "dateStyle": "long",
+  "musicAutostart": true,
+  "musicNotch": "media",
+  "archiveFmt": "zip",
+  "archiveLvl": "normal",
+  "mascotExtras": [
+    "dance",
+    "outfit",
+    "sit",
+    "friend",
+    "notes"
+  ],
+  "mascotEdge": "right",
+  "islandCorner": "tr",
+  "islandScreen": "main",
+  "pw": {
+    "hotkey": "CTRL + SHIFT + P",
+    "symbols": false,
+    "symbolSet": "!@#$%^&*()-_=+[]{};:,.?",
+    "ignored": [
+      "keepassxc",
+      "org.keepassxc.KeePassXC",
+      "bitwarden",
+      "1password",
+      "proton-pass",
+      "enpass",
+      "nordpass",
+      "org.kde.kwalletmanager5",
+      "seahorse",
+      "org.gnome.World.Secrets"
+    ]
+  },
+  "ambient": {
+    "rain": {
+      "on": false,
+      "vol": 45
+    },
+    "fire": {
+      "on": false,
+      "vol": 50
+    },
+    "noise": {
+      "on": false,
+      "vol": 45
+    },
+    "cafe": {
+      "on": false,
+      "vol": 0
+    },
+    "forest": {
+      "on": false,
+      "vol": 45
+    },
+    "waves": {
+      "on": false,
+      "vol": 15
+    }
+  }
+}

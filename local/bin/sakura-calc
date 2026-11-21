@@ -1,0 +1,16 @@
+#!/usr/bin/env bash
+# Sakura Calc - open it, or bring the running one to the front.
+#   sakura-calc              open / focus
+#   sakura-calc conv|sci|calc   open in that mode
+#   sakura-calc <ipc...>     type TEXT | key enter|esc|copy | state | quit
+P="$HOME/.config/sakura-calc"
+running() { qs -p "$P" ipc show 2>/dev/null | grep -q 'target calc'; }
+if ! running; then
+    (cd ~ && qs -n -d -p "$P" >/dev/null 2>&1)
+    for _ in $(seq 40); do running && break; sleep 0.1; done
+fi
+case "${1:-}" in
+    "") hyprctl eval "hl.dispatch(hl.dsp.focus({ window = 'class:^(sakura-calc)\$' })); hl.dispatch(hl.dsp.window.bring_to_top())" >/dev/null 2>&1 ;;
+    calc|sci|conv) qs -p "$P" ipc call calc mode "$1" >/dev/null ;;
+    *) qs -p "$P" ipc call calc "$@" ;;
+esac

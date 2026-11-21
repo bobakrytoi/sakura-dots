@@ -1,0 +1,1 @@
+{"name": "MY", "colors": {"accent": "auto", "glass": "auto", "fg": "auto", "muted": "auto", "card": {"alpha": 0.1}}, "cover": "rounded", "background": "blur", "density": "comfy", "player": "big", "wave": "bars", "visualizer": true, "fontHead": "", "radius": 24, "particles": "snow", "vizStyle": "mirror", "glow": true, "pulse": true, "bgMotion": true}

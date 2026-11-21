@@ -1,0 +1,8 @@
+{ "name": "Feed filters", "version": "1.0", "icon": "feed", "enabled": true,
+  "description": "Skip reposts and short previews",
+  "settings": [
+    { "key": "reposts", "type": "toggle", "label": "Hide reposts in the feed", "default": false },
+    { "key": "previews", "type": "toggle", "label": "Hide 30 s previews in lists", "default": false },
+    { "key": "skip", "type": "toggle", "label": "Skip previews while playing", "default": false },
+    { "key": "min", "type": "slider", "label": "Hide tracks shorter than", "min": 0, "max": 120, "step": 5, "suffix": " s", "default": 0 }
+  ] }

@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200">
+  <g fill="#aad2ee">
+    <path transform="rotate(0 100 100)" d="M100 92 C66 74 58 30 82 8 L100 22 L118 8 C142 30 134 74 100 92 Z"/>
+    <path transform="rotate(72 100 100)" d="M100 92 C66 74 58 30 82 8 L100 22 L118 8 C142 30 134 74 100 92 Z"/>
+    <path transform="rotate(144 100 100)" d="M100 92 C66 74 58 30 82 8 L100 22 L118 8 C142 30 134 74 100 92 Z"/>
+    <path transform="rotate(216 100 100)" d="M100 92 C66 74 58 30 82 8 L100 22 L118 8 C142 30 134 74 100 92 Z"/>
+    <path transform="rotate(288 100 100)" d="M100 92 C66 74 58 30 82 8 L100 22 L118 8 C142 30 134 74 100 92 Z"/>
+  </g>
+  <circle cx="100" cy="100" r="16" fill="#0f1119" fill-opacity=".9"/>
+</svg>

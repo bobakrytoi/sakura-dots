@@ -1,0 +1,15 @@
+[Desktop Entry]
+Type=Application
+Name=Sakura Sound
+GenericName=Music Player
+Comment=SoundCloud player
+Exec=__HOME__/.local/bin/sakura-sound
+Icon=sakura-sound
+Terminal=false
+Categories=AudioVideo;Audio;Player;
+Keywords=music;soundcloud;player;audio;
+Actions=toggle;
+
+[Desktop Action toggle]
+Name=Play / Pause
+Exec=__HOME__/.local/bin/sakura-sound play-pause

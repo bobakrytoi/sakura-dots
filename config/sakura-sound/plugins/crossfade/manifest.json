@@ -1,0 +1,5 @@
+{ "name": "Gapless", "version": "2.0", "icon": "queue", "enabled": true,
+  "description": "The next track follows without a pause",
+  "settings": [
+    { "key": "gapless", "type": "choice", "label": "Gapless", "options": [ {"v": "weak", "t": "On"}, {"v": "yes", "t": "Strict"}, {"v": "no", "t": "Off"} ], "default": "weak" }
+  ] }

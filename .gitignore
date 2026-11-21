@@ -1,0 +1,23 @@
+# backups and leftovers
+*.bak*
+.bak-*/
+*.orig
+*.tmp
+*.log
+__pycache__/
+*.pyc
+
+# runtime state, written by the shell / player
+state.json
+config/sakura/weather.json
+config/sakura/timers.json
+config/sakura/tray.json
+config/sakura/todo.json
+config/sakura/desknote.txt
+config/sakura/clip-pins.json
+config/sakura/mic-chain.conf
+config/hypr/monitors.lua
+config/hypr/pwhelper.lua
+
+# per-machine
+system/sddm/main-monitor-serial

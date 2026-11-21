@@ -1,0 +1,37 @@
+#!/usr/bin/env bash
+# sakura-tray-app start   - autostart: wait until the tray (StatusNotifierWatcher, run by quickshell) exists, then start Mullvad
+# sakura-tray-app revive  - the tray restarted and Mullvad's icon is gone: restart only its window process
+#                           (the VPN daemon and the tunnel are not touched) and tuck the window back into the tray.
+#                           (Hiding goes through Mullvad's own tray click: closing the window from outside breaks it.)
+APP="/opt/Mullvad VPN/mullvad-vpn"
+[ -x "$APP" ] || exit 0
+watcher() { busctl --user status org.kde.StatusNotifierWatcher >/dev/null 2>&1; }
+activate() {
+  python3 -I - <<'PY'
+from gi.repository import Gio, GLib
+bus = Gio.bus_get_sync(Gio.BusType.SESSION, None)
+reg = bus.call_sync("org.kde.StatusNotifierWatcher", "/StatusNotifierWatcher", "org.freedesktop.DBus.Properties", "Get",
+                    GLib.Variant("(ss)", ("org.kde.StatusNotifierWatcher", "RegisteredStatusNotifierItems")), None, 0, 800, None).unpack()[0]
+for it in reg:
+    dest, path = (it.split("/", 1)[0], "/" + it.split("/", 1)[1]) if "/" in it else (it, "/StatusNotifierItem")
+    try:
+        p = bus.call_sync(dest, path, "org.freedesktop.DBus.Properties", "GetAll", GLib.Variant("(s)", ("org.kde.StatusNotifierItem",)), None, 0, 800, None).unpack()[0]
+        if "mullvad" in (p.get("Id") or "").lower():
+            bus.call_sync(dest, path, "org.kde.StatusNotifierItem", "Activate", GLib.Variant("(ii)", (0, 0)), None, 0, 800, None)
+            print("ok"); break
+    except Exception:
+        pass
+PY
+}
+case "$1" in
+  start)
+    for _ in $(seq 60); do watcher && break; sleep 0.5; done
+    exec "$APP" --ozone-platform=x11 ;;
+  revive)
+    pkill -KILL -f '^/opt/Mullvad VPN/mullvad-gui'; sleep 0.8
+    setsid -f "$APP" --ozone-platform=x11 >/dev/null 2>&1
+    for _ in $(seq 60); do
+      sleep 0.25
+      if hyprctl clients -j | grep -q '"class": "mullvad-vpn"' && [ "$(activate)" = ok ]; then break; fi
+    done ;;
+esac

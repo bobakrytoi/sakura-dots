@@ -1,0 +1,7 @@
+{ "name": "Lyrics", "version": "1.0", "icon": "lyrics", "enabled": true,
+  "description": "Synced lyrics from LRCLIB in the right panel and in Now playing",
+  "settings": [
+    { "key": "offset", "type": "slider", "label": "Offset", "min": -3, "max": 3, "step": 0.1, "decimals": 1, "suffix": " s", "default": 0 },
+    { "key": "size", "type": "slider", "label": "Text size", "min": 13, "max": 26, "step": 1, "default": 17 },
+    { "key": "now", "type": "toggle", "label": "Line in Now playing", "default": true }
+  ] }

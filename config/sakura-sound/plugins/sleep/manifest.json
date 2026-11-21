@@ -1,0 +1,3 @@
+{ "name": "Sleep timer", "version": "1.0", "icon": "moon", "enabled": true,
+  "description": "Pause after N minutes, at the end of the track or of the queue",
+  "settings": [ { "key": "fade", "type": "toggle", "label": "Fade out over the last 30 s", "default": true } ] }

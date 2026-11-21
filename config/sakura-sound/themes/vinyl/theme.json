@@ -1,0 +1,13 @@
+{
+  "name": "Vinyl",
+  "about": "Spinning record, blurred cover behind everything, mirrored wave.",
+  "colors": { "accent": "auto", "glass": "auto", "fg": "auto", "muted": "auto", "card": { "alpha": 0.1 } },
+  "cover": "vinyl",
+  "background": "blur",
+  "density": "comfy",
+  "player": "big",
+  "wave": "mirror",
+  "visualizer": true,
+  "fontHead": "",
+  "radius": 24
+}

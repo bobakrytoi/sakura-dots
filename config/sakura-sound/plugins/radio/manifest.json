@@ -1,0 +1,3 @@
+{ "name": "Track radio", "version": "1.0", "icon": "radio", "enabled": true,
+  "description": "Endless queue: when the last track starts, related tracks are added",
+  "settings": [ { "key": "auto", "type": "toggle", "label": "Keep the queue going", "default": true } ] }

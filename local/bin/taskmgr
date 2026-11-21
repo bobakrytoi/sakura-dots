@@ -1,0 +1,28 @@
+#!/usr/bin/env bash
+# sakura task manager - open it, or bring it to the front if it is already open.
+#   taskmgr                 open on the last page
+#   taskmgr performance     open on the Performance page
+#   taskmgr cpu|mem|gpu|disk|net   open a specific graph
+P="$HOME/.config/taskmgr"
+arg="${1:-}"
+
+call() {
+    case "$arg" in
+        "") ;;
+        processes|performance) qs -p "$P" ipc call taskmgr page "$arg" >/dev/null 2>&1 ;;
+        *) qs -p "$P" ipc call taskmgr perf "$arg" >/dev/null 2>&1 ;;
+    esac
+}
+
+if qs -p "$P" ipc show >/dev/null 2>&1 && qs -p "$P" ipc show 2>/dev/null | grep -q 'target taskmgr'; then
+    call
+    hyprctl eval "hl.dispatch(hl.dsp.focus({ window = 'title:^(Task Manager)\$' })); hl.dispatch(hl.dsp.window.bring_to_top())" >/dev/null
+    exit 0
+fi
+
+qs -n -d -p "$P" >/dev/null 2>&1
+for _ in $(seq 30); do
+    qs -p "$P" ipc show 2>/dev/null | grep -q 'target taskmgr' && break
+    sleep 0.1
+done
+call

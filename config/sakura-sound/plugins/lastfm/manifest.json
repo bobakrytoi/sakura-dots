@@ -1,0 +1,9 @@
+{ "name": "Last.fm scrobbler", "version": "1.0", "icon": "chart", "enabled": false,
+  "description": "Now playing + scrobbles to your Last.fm account",
+  "settings": [
+    { "key": "key", "type": "text", "label": "API key", "default": "" },
+    { "key": "secret", "type": "secret", "label": "Shared secret", "default": "" },
+    { "key": "connect", "type": "action", "label": "Account", "button": "Connect", "default": "" },
+    { "key": "finish", "type": "action", "label": "After allowing in the browser", "button": "Done", "default": "" },
+    { "key": "status", "type": "info", "label": "Status", "default": "Not connected" }
+  ] }

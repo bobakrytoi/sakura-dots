@@ -1,0 +1,96 @@
+configuration {
+    modi:                "drun,run,window";
+    show-icons:          true;
+    icon-theme:          "Papirus-Dark";
+    display-drun:        "";
+    display-run:         "";
+    display-window:      "";
+    drun-display-format: "{name}";
+    font:                "Inter Medium 12";
+    hover-select:        true;
+    me-select-entry:     "";
+    me-accept-entry:     "MousePrimary";
+    kb-cancel:           "Escape,Super+r,Super+space";
+}
+@import "colors.rasi"
+
+window {
+    width:            860px;
+    height:           520px;
+    border:           1px;
+    border-color:     @border-c;
+    border-radius:    22px;
+    background-color: @bg;
+}
+mainbox {
+    orientation:      horizontal;
+    children:         [ imagebox, listbox ];
+    background-color: transparent;
+}
+imagebox {
+    width:            306px;
+    expand:           false;
+    background-color: transparent;
+    background-image: url("~/.config/rofi/images/side.jpg", height);
+    border-radius:    22px 0 0 22px;
+    padding:          20px;
+    children:         [ dummy, clock ];
+    orientation:      vertical;
+}
+dummy { expand: true; background-color: transparent; }
+clock {
+    enabled: false;
+}
+listbox {
+    spacing:          14px;
+    padding:          22px;
+    background-color: transparent;
+    children:         [ inputbar, listview ];
+}
+inputbar {
+    padding:          12px 16px;
+    spacing:          10px;
+    border-radius:    14px;
+    background-color: @surface2;
+    text-color:       @fg;
+    children:         [ prompt, entry ];
+}
+prompt  { background-color: transparent; text-color: @accent; font: "Symbols Nerd Font 14"; }
+entry   { background-color: transparent; text-color: @fg; placeholder: "search..."; placeholder-color: @muted; cursor: text; }
+mode-switcher { spacing: 8px; background-color: transparent; }
+button {
+    padding:          8px;
+    border-radius:    12px;
+    background-color: @surface;
+    text-color:       @muted;
+    font:             "Symbols Nerd Font 14";
+    cursor:           pointer;
+}
+button selected { background-color: @accent; text-color: @accent-fg; }
+listview {
+    columns:          1;
+    lines:            8;
+    spacing:          4px;
+    cycle:            true;
+    dynamic:          true;
+    scrollbar:        false;
+    fixed-height:     true;
+    background-color: transparent;
+    cursor:           "default";
+}
+element {
+    padding:          9px 12px;
+    spacing:          12px;
+    border-radius:    12px;
+    background-color: transparent;
+    text-color:       @fg;
+    cursor:           pointer;
+}
+element normal.normal, element alternate.normal { background-color: transparent; text-color: @fg; }
+element selected.normal {
+    background-color: @accent;
+    text-color:       @accent-fg;
+}
+element-icon { size: 28px; background-color: transparent; cursor: inherit; }
+element-text { background-color: transparent; text-color: inherit; vertical-align: 0.5; cursor: inherit; }
+listview, inputbar, listbox, mainbox { border: 0; }

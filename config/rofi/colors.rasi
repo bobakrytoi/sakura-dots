@@ -1,0 +1,11 @@
+* {
+    bg:        #0f11198c;
+    bg-solid:  #0f1119;
+    surface:   #ffffff14;
+    surface2:  #ffffff29;
+    border-c:  #ffffff1f;
+    fg:        #eceef4;
+    muted:     #8a8fa3;
+    accent:    #f7d0a1;
+    accent-fg: #1a121a;
+}

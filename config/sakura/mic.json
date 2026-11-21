@@ -1,0 +1,21 @@
+{
+  "enabled": false,
+  "device": "",
+  "deviceDesc": "",
+  "autoDefault": false,
+  "live": false,
+  "denoise": 50.0,
+  "gateOn": false,
+  "gate": -60,
+  "pitch": 0,
+  "hpf": 80.0,
+  "bass": 0,
+  "mud": 0,
+  "mid": 0,
+  "presence": 0,
+  "air": 0,
+  "compOn": false,
+  "compThresh": -20,
+  "compRatio": 2.0,
+  "gain": 0
+}

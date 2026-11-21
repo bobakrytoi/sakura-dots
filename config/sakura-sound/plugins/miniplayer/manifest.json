@@ -1,0 +1,6 @@
+{ "name": "Mini player", "version": "1.0", "icon": "collapse", "enabled": true,
+  "description": "Small glass player on top of all windows, drag it anywhere",
+  "settings": [
+    { "key": "screen", "type": "choice", "label": "Monitor", "options": [ {"v": "main", "t": "Main"}, {"v": "second", "t": "Second"} ], "default": "main" },
+    { "key": "wave", "type": "toggle", "label": "Wave", "default": true }
+  ] }

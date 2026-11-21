@@ -1,0 +1,20 @@
+[Desktop Entry]
+Type=Application
+Name=Calculator
+GenericName=Calculator
+Comment=Calculator, scientific functions and unit converter
+Exec=__HOME__/.local/bin/sakura-calc
+Icon=sakura-calc
+Terminal=false
+StartupWMClass=sakura-calc
+Categories=Utility;Calculator;
+Keywords=calc;calculator;math;convert;currency;units;калькулятор;конвертер;
+Actions=scientific;convert;
+
+[Desktop Action scientific]
+Name=Scientific
+Exec=__HOME__/.local/bin/sakura-calc sci
+
+[Desktop Action convert]
+Name=Converter
+Exec=__HOME__/.local/bin/sakura-calc conv

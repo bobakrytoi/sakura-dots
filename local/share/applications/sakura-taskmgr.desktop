@@ -1,0 +1,15 @@
+[Desktop Entry]
+Type=Application
+Name=Task Manager
+GenericName=System Monitor
+Comment=Processes and performance
+Exec=__HOME__/.local/bin/taskmgr
+Icon=sakura-taskmgr
+Terminal=false
+Categories=System;Monitor;
+Keywords=process;kill;cpu;memory;gpu;monitor;task;
+Actions=performance;
+
+[Desktop Action performance]
+Name=Performance
+Exec=__HOME__/.local/bin/taskmgr performance

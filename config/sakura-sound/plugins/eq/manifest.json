@@ -1,0 +1,5 @@
+{ "name": "Equalizer", "version": "1.0", "icon": "eq", "enabled": true,
+  "description": "10-band equalizer with presets and loudness normalization (mpv filters)",
+  "settings": [
+    { "key": "norm", "type": "choice", "label": "Normalization", "options": [ {"v": "off", "t": "Off"}, {"v": "dyn", "t": "Dynamic"}, {"v": "loud", "t": "Loudness"} ], "default": "off" }
+  ] }

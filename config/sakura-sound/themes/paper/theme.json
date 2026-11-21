@@ -1,0 +1,13 @@
+{
+  "name": "Paper",
+  "about": "Quiet and dense: square covers, thin line wave, compact player, accent shifted a little.",
+  "colors": { "accent": { "sat": -0.15, "light": 0.04 }, "glass": "auto", "fg": "auto", "muted": "auto", "card": "auto" },
+  "cover": "square",
+  "background": "gradient",
+  "density": "compact",
+  "player": "compact",
+  "wave": "line",
+  "visualizer": false,
+  "sideW": 188,
+  "radius": 14
+}

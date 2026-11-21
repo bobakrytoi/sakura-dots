@@ -1,0 +1,8 @@
+[Plymouth Theme]
+Name=Sakura
+Description=sakura mono boot splash
+ModuleName=script
+
+[script]
+ImageDir=/usr/share/plymouth/themes/sakura
+ScriptFile=/usr/share/plymouth/themes/sakura/sakura.script

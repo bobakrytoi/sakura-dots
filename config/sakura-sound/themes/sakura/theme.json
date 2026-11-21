@@ -1,0 +1,12 @@
+{
+  "name": "Sakura",
+  "about": "Glass, rounded covers, SoundCloud bars. Colours follow the system.",
+  "colors": { "accent": "auto", "glass": "auto", "fg": "auto", "muted": "auto", "card": "auto" },
+  "cover": "rounded",
+  "background": "glass",
+  "density": "normal",
+  "player": "big",
+  "wave": "bars",
+  "visualizer": true,
+  "radius": 22
+}

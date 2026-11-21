@@ -1,0 +1,13 @@
+[Desktop Entry]
+Type=Service
+MimeType=image/*;video/*;audio/*;application/pdf;
+X-KDE-Protocols=file
+X-KDE-ServiceTypes=KonqPopupMenu/Plugin
+X-KDE-Priority=TopLevel
+Actions=convert;
+
+[Desktop Action convert]
+Name=Convert…
+Name[ru]=Конвертировать…
+Icon=emblem-synchronizing
+Exec=python3 -I __HOME__/.config/hypr/scripts/convert.py ui %F

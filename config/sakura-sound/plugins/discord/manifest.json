@@ -1,0 +1,7 @@
+{ "name": "Discord Rich Presence", "version": "1.0", "icon": "users", "enabled": false,
+  "description": "\"Listening to …\" with the cover in your Discord status",
+  "settings": [
+    { "key": "app", "type": "text", "label": "Application ID", "sub": "discord.com/developers → New application", "default": "" },
+    { "key": "button", "type": "toggle", "label": "Button \"Open on SoundCloud\"", "default": true },
+    { "key": "pause", "type": "toggle", "label": "Hide on pause", "default": true }
+  ] }

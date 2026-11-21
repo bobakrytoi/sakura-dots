@@ -1,0 +1,39 @@
+{
+  "side": "",
+  "theme": "my",
+  "plugins": {
+    "miniplayer": {
+      "enabled": true,
+      "config": {
+        "screen": "main"
+      }
+    },
+    "radio": {
+      "config": {
+        "auto": true
+      },
+      "enabled": true
+    },
+    "crossfade": {
+      "enabled": true
+    },
+    "eq": {
+      "config": {
+        "bands": [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        "preset": "Flat",
+        "norm": "off"
+      }
+    }
+  }
+}

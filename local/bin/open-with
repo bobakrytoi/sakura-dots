@@ -1,0 +1,280 @@
+#!/usr/bin/env python3
+import sys, os, gi
+gi.require_version('Gtk', '4.0')
+gi.require_version('Adw', '1')
+from gi.repository import Gtk, Adw, Gio, GLib, Gdk, GdkPixbuf
+
+APP_ID = 'org.sakura.OpenWith'
+
+
+def mime_for(path):
+    try:
+        f = Gio.File.new_for_path(path)
+        info = f.query_info('standard::content-type', 0, None)
+        return info.get_content_type() or 'application/octet-stream'
+    except GLib.Error:
+        return 'application/octet-stream'
+
+
+def recommended(mime):
+    seen = set()
+    out = []
+    for group in (
+        Gio.AppInfo.get_recommended_for_type(mime) or [],
+        Gio.AppInfo.get_fallback_for_type(mime) or [],
+        Gio.AppInfo.get_all_for_type(mime) or [],
+    ):
+        for a in group:
+            k = a.get_id()
+            if k and k not in seen:
+                seen.add(k); out.append(a)
+    return out
+
+
+def all_apps(exclude_ids):
+    out = []
+    for a in Gio.AppInfo.get_all() or []:
+        if not a.should_show(): continue
+        if a.get_id() in exclude_ids: continue
+        out.append(a)
+    out.sort(key=lambda a: (a.get_display_name() or '').lower())
+    return out
+
+
+class Picker(Adw.Application):
+    def __init__(self, files):
+        super().__init__(application_id=APP_ID, flags=Gio.ApplicationFlags.NON_UNIQUE)
+        self.files = files
+        self.mime = mime_for(files[0]) if files else 'application/octet-stream'
+        self.selected = None
+
+    def do_activate(self):
+        win = Adw.ApplicationWindow(application=self, default_width=560, default_height=640)
+        win.set_title('Open with')
+
+        tv = Adw.ToolbarView()
+        hb = Adw.HeaderBar()
+        hb.set_title_widget(Adw.WindowTitle(title='Open with', subtitle=self.mime))
+        tv.add_top_bar(hb)
+
+        root = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=12,
+                       margin_top=14, margin_bottom=14, margin_start=18, margin_end=18)
+
+        # File row
+        fname = os.path.basename(self.files[0]) if self.files else ''
+        file_card = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=12)
+        file_card.add_css_class('card')
+        file_card.set_margin_bottom(4)
+        thumb = self._thumb(self.files[0]) if self.files else Gtk.Image.new_from_icon_name('text-x-generic')
+        thumb.set_pixel_size(48)
+        file_card.append(thumb)
+        meta = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=2, valign=Gtk.Align.CENTER, hexpand=True)
+        name_l = Gtk.Label(label=fname, xalign=0, ellipsize=3)
+        name_l.add_css_class('title-4')
+        mime_l = Gtk.Label(label=self.mime, xalign=0, ellipsize=3)
+        mime_l.add_css_class('dim-label')
+        mime_l.add_css_class('caption')
+        meta.append(name_l); meta.append(mime_l)
+        file_card.append(meta)
+        card_wrap = Gtk.Box()
+        card_wrap.add_css_class('card')
+        card_wrap.set_margin_bottom(4)
+        inner = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=12,
+                        margin_top=10, margin_bottom=10, margin_start=12, margin_end=12)
+        inner.append(thumb); inner.append(meta)
+        card_wrap.append(inner)
+        root.append(card_wrap)
+
+        # Scrollable app list with sections
+        scroller = Gtk.ScrolledWindow(vexpand=True)
+        scroller.set_policy(Gtk.PolicyType.NEVER, Gtk.PolicyType.AUTOMATIC)
+        self.listbox = Gtk.ListBox(selection_mode=Gtk.SelectionMode.SINGLE)
+        self.listbox.add_css_class('boxed-list')
+        self.listbox.connect('row-activated', lambda _b, _r: self._do_open())
+
+        rec = recommended(self.mime)
+        rec_ids = {a.get_id() for a in rec}
+
+        if rec:
+            self._section('Recommended')
+            for a in rec: self._app_row(a, recommended=True)
+        self._section('Other applications')
+        for a in all_apps(rec_ids): self._app_row(a, recommended=False)
+
+        # Custom command row
+        self._custom_row()
+
+        scroller.set_child(self.listbox)
+        scroller_card = Gtk.Box(orientation=Gtk.Orientation.VERTICAL)
+        scroller_card.append(scroller)
+        root.append(scroller)
+
+        # Bottom bar
+        self.always = Gtk.CheckButton(label=f'Always use this app for “{self.mime}”')
+        root.append(self.always)
+
+        actions = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=8, halign=Gtk.Align.END)
+        cancel = Gtk.Button(label='Cancel')
+        cancel.connect('clicked', lambda _b: win.close())
+        openb = Gtk.Button(label='Open')
+        openb.add_css_class('suggested-action')
+        openb.connect('clicked', lambda _b: self._do_open())
+        self.open_btn = openb
+        openb.set_sensitive(False)
+        actions.append(cancel); actions.append(openb)
+        root.append(actions)
+
+        self.listbox.connect('row-selected', lambda _b, r: self.open_btn.set_sensitive(r is not None))
+
+        tv.set_content(root)
+        win.set_content(tv)
+        win.present()
+
+        # Preselect first recommended
+        first = self.listbox.get_row_at_index(1 if rec else 1)
+        if first and getattr(first, 'app_info', None):
+            self.listbox.select_row(first)
+
+    def _section(self, title):
+        row = Gtk.ListBoxRow(selectable=False, activatable=False)
+        lbl = Gtk.Label(label=title, xalign=0,
+                        margin_top=10, margin_bottom=4, margin_start=4)
+        lbl.add_css_class('heading')
+        lbl.add_css_class('dim-label')
+        row.set_child(lbl)
+        self.listbox.append(row)
+
+    def _app_row(self, app_info, recommended):
+        row = Gtk.ListBoxRow()
+        row.app_info = app_info
+        row.custom_cmd = False
+        box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=12,
+                      margin_top=8, margin_bottom=8, margin_start=10, margin_end=10)
+        icon = app_info.get_icon()
+        img = Gtk.Image.new_from_gicon(icon) if icon else Gtk.Image.new_from_icon_name('application-x-executable')
+        img.set_pixel_size(32)
+        box.append(img)
+        text = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=1, hexpand=True, valign=Gtk.Align.CENTER)
+        name = Gtk.Label(label=app_info.get_display_name() or '', xalign=0, ellipsize=3)
+        text.append(name)
+        desc = app_info.get_description() or app_info.get_executable() or ''
+        if desc:
+            d = Gtk.Label(label=desc, xalign=0, ellipsize=3)
+            d.add_css_class('caption'); d.add_css_class('dim-label')
+            text.append(d)
+        box.append(text)
+        if recommended:
+            tag = Gtk.Label(label='★')
+            tag.add_css_class('caption'); tag.add_css_class('accent')
+            box.append(tag)
+        row.set_child(box)
+        self.listbox.append(row)
+
+    def _custom_row(self):
+        self._section('Custom')
+        row = Gtk.ListBoxRow()
+        row.app_info = None
+        row.custom_cmd = True
+        box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=12,
+                      margin_top=8, margin_bottom=8, margin_start=10, margin_end=10)
+        img = Gtk.Image.new_from_icon_name('system-search-symbolic')
+        img.set_pixel_size(32)
+        box.append(img)
+        text = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=1, hexpand=True, valign=Gtk.Align.CENTER)
+        text.append(Gtk.Label(label='Custom command…', xalign=0))
+        d = Gtk.Label(label='Enter any command or path to an executable', xalign=0, ellipsize=3)
+        d.add_css_class('caption'); d.add_css_class('dim-label')
+        text.append(d)
+        box.append(text)
+        row.set_child(box)
+        self.listbox.append(row)
+
+    def _thumb(self, path):
+        try:
+            if self.mime.startswith('image/'):
+                pb = GdkPixbuf.Pixbuf.new_from_file_at_scale(path, 48, 48, True)
+                return Gtk.Image.new_from_pixbuf(pb)
+        except GLib.Error:
+            pass
+        try:
+            ctype = self.mime
+            icon = Gio.content_type_get_icon(ctype)
+            return Gtk.Image.new_from_gicon(icon)
+        except Exception:
+            return Gtk.Image.new_from_icon_name('text-x-generic')
+
+    def _do_open(self):
+        row = self.listbox.get_selected_row()
+        if not row: return
+        if getattr(row, 'custom_cmd', False):
+            self._ask_command()
+            return
+        app = row.app_info
+        if not app: return
+        if self.always.get_active():
+            try: app.set_as_default_for_type(self.mime)
+            except GLib.Error as e:
+                print(f'warn: set default failed: {e.message}', file=sys.stderr)
+        files = [Gio.File.new_for_path(p) for p in self.files]
+        try:
+            app.launch(files, None)
+        except GLib.Error as e:
+            self._error(f'Failed to launch:\n{e.message}')
+            return
+        self.quit()
+
+    def _ask_command(self):
+        win = self.get_active_window()
+        dlg = Adw.AlertDialog(
+            heading='Open command',
+            body='For example: feh, mpv, code. The file is appended as an argument.')
+        entry = Gtk.Entry(placeholder_text='command name or path', activates_default=True)
+        dlg.set_extra_child(entry)
+        dlg.add_response('cancel', 'Cancel')
+        dlg.add_response('ok', 'Open')
+        dlg.set_default_response('ok')
+        dlg.set_response_appearance('ok', Adw.ResponseAppearance.SUGGESTED)
+
+        def on_resp(_d, resp):
+            if resp != 'ok': return
+            cmd = entry.get_text().strip()
+            if not cmd: return
+            try:
+                app = Gio.AppInfo.create_from_commandline(
+                    f'{cmd} %U', cmd.split()[0],
+                    Gio.AppInfoCreateFlags.SUPPORTS_URIS)
+            except GLib.Error as e:
+                self._error(e.message); return
+            if self.always.get_active():
+                try: app.set_as_default_for_type(self.mime)
+                except GLib.Error: pass
+            files = [Gio.File.new_for_path(p) for p in self.files]
+            try: app.launch(files, None)
+            except GLib.Error as e: self._error(e.message); return
+            self.quit()
+
+        dlg.connect('response', on_resp)
+        dlg.present(win)
+
+    def _error(self, text):
+        win = self.get_active_window()
+        d = Adw.AlertDialog(heading='Error', body=text)
+        d.add_response('ok', 'OK')
+        d.present(win)
+
+
+def main():
+    files = [os.path.abspath(a) for a in sys.argv[1:] if not a.startswith('--')]
+    if not files:
+        print('usage: open-with FILE [FILE...]', file=sys.stderr)
+        sys.exit(2)
+    for p in files:
+        if not os.path.exists(p):
+            print(f'not found: {p}', file=sys.stderr); sys.exit(2)
+    Adw.init()
+    app = Picker(files)
+    sys.exit(app.run([sys.argv[0]]))
+
+
+if __name__ == '__main__':
+    main()

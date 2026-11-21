@@ -1,0 +1,48 @@
+#!/usr/bin/env bash
+# Sakura Sound - open it, toggle it, or bring it to the front.
+#   sakura-sound                 show (start if needed) and focus
+#   sakura-sound toggle          show/hide
+#   sakura-sound daemon          start hidden (autostart)
+#   sakura-sound browser NAME    cookies from brave|chromium|chrome|firefox
+#   sakura-sound autostart-on|autostart-off
+#   sakura-sound <ipc...>        play-pause | next | prev | page search | state
+P="$HOME/.config/sakura-sound"
+running() { qs -p "$P" ipc show 2>/dev/null | grep -q 'target sound'; }
+start() {
+    (cd ~ && SAKURA_SOUND_HIDDEN="${1:-0}" qs -n -d -p "$P" >/dev/null 2>&1)
+    for _ in $(seq 40); do running && break; sleep 0.1; done
+}
+
+case "${1:-}" in
+    autostart-on)
+        mkdir -p ~/.config/autostart
+        sed -e 's|^Exec=.*|Exec='"$HOME"'/.local/bin/sakura-sound daemon|' -e '/^Actions=/d;/^\[Desktop Action/,$d' \
+            ~/.local/share/applications/sakura-sound.desktop > ~/.config/autostart/sakura-sound.desktop
+        exit 0 ;;
+    autostart-off) rm -f ~/.config/autostart/sakura-sound.desktop; exit 0 ;;
+    browser)
+        if running; then qs -p "$P" ipc call sound browser "${2:-brave}" >/dev/null
+        else python3 - "$P/settings.json" "${2:-brave}" <<'PY'
+import json, sys
+p, b = sys.argv[1], sys.argv[2]
+try: d = json.load(open(p))
+except Exception: d = {}
+d["browser"] = b
+json.dump(d, open(p, "w"), indent=2)
+PY
+        fi
+        exit 0 ;;
+    daemon) running || start 1; exit 0 ;;
+esac
+
+if ! running; then
+    start 0
+    [ -z "${1:-}" ] && exit 0
+fi
+case "${1:-}" in
+    "") qs -p "$P" ipc call sound open >/dev/null
+        hyprctl eval "hl.dispatch(hl.dsp.focus({ window = 'title:^(Sakura Sound)\$' })); hl.dispatch(hl.dsp.window.bring_to_top())" >/dev/null ;;
+    toggle) qs -p "$P" ipc call sound toggle >/dev/null ;;
+    play-pause) qs -p "$P" ipc call sound playPause ;;
+    *) qs -p "$P" ipc call sound "$@" ;;
+esac

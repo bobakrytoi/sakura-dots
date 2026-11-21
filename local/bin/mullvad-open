@@ -1,0 +1,75 @@
+#!/usr/bin/env bash
+# mullvad-open - always bring up the Mullvad VPN window (launcher, autostart, tray click, tray "Open").
+# Mullvad's Electron GUI hides its window to the tray on close and later sometimes cannot show it again
+# on Wayland: the process lives on, windowless, and every "Open" just pokes that dead instance.
+#   window exists      → focus it (pull it out of the minimized stash if needed)
+#   GUI not running    → start it
+#   GUI runs, no window → ask it to show (second-instance poke); if nothing appears, restart the GUI only
+# The VPN daemon (mullvad-daemon) and the tunnel are never touched.
+# Never pkill/pgrep -f here: match the GUI by its exact executable via /proc/<pid>/exe.
+GUI="/opt/Mullvad VPN/mullvad-gui"
+APP="/opt/Mullvad VPN/mullvad-vpn"
+# XWayland: under native Wayland Electron loses the window after ~2 min hidden in the tray; under X11 hide/show works
+FLAGS=(--ozone-platform=x11)
+[ -x "$APP" ] || exit 0
+LOG="${XDG_CACHE_HOME:-$HOME/.cache}/sakura/mullvad-open.log"
+mkdir -p "${LOG%/*}"
+log() { printf '%s %s\n' "$(date '+%F %T')" "$*" >>"$LOG"; }
+exec 9>"${XDG_RUNTIME_DIR:-/tmp}/mullvad-open.lock"
+flock -w 15 9 || exit 0          # double clicks / tray + launcher at once: one at a time
+
+# main GUI process: exact exe, no --type= (zygote/gpu/renderer children carry one)
+mainpid() {
+  local p
+  for p in $(pgrep -x mullvad-gui); do
+    [ "$(readlink "/proc/$p/exe" 2>/dev/null)" = "$GUI" ] || continue
+    tr '\0' '\n' <"/proc/$p/cmdline" 2>/dev/null | grep -q '^--type=' && continue
+    echo "$p"; return 0
+  done
+  return 1
+}
+# "address workspace" of Mullvad's window, if it has one
+window() {
+  hyprctl clients -j 2>/dev/null | python3 -I -c '
+import json, sys
+for c in json.load(sys.stdin):
+    if c.get("class", "").lower() in ("mullvad-vpn", "mullvad vpn") and c.get("mapped", True):
+        print(c["address"], c["workspace"]["name"]); break'
+}
+waitwin() {   # $1 = tries × 0.25 s
+  local i w
+  for i in $(seq "$1"); do w=$(window); [ -n "$w" ] && { echo "$w"; return 0; }; sleep 0.25; done
+  return 1
+}
+start() { (cd "$HOME" && setsid -f "$APP" "${FLAGS[@]}" >/dev/null 2>&1 9>&-); }   # 9>&-: the GUI must not inherit our lock
+focus() {
+  local addr=${1%% *} ws=${1#* }
+  if [ "$ws" = "special:minimized" ] && [ -x "$HOME/.config/hypr/scripts/minimize.sh" ]; then
+    "$HOME/.config/hypr/scripts/minimize.sh" restore-addr "$addr" >/dev/null 2>&1 && return
+  fi
+  hyprctl eval "hl.dispatch(hl.dsp.focus({ window = 'address:$addr' })); hl.dispatch(hl.dsp.window.bring_to_top())" >/dev/null 2>&1
+}
+restart() {
+  local p=$1 i
+  log "restart GUI pid $p (running, no window)"
+  kill "$p" 2>/dev/null
+  for i in $(seq 20); do kill -0 "$p" 2>/dev/null || break; sleep 0.15; done
+  kill -0 "$p" 2>/dev/null && kill -KILL "$p" 2>/dev/null
+  for i in $(seq 20); do mainpid >/dev/null || break; sleep 0.15; done
+  start
+}
+
+w=$(window)
+if [ -n "$w" ]; then focus "$w"; exit 0; fi
+
+if ! p=$(mainpid); then
+  log "start GUI"
+  start
+  w=$(waitwin 60) && focus "$w"
+  exit 0
+fi
+
+start                                   # second instance → running one gets "second-instance" → showWindow()
+if w=$(waitwin 8); then focus "$w"; exit 0; fi
+restart "$p"
+w=$(waitwin 60) && focus "$w" || log "still no window after restart"
