@@ -15,7 +15,9 @@ ShellRoot {
     id: root
 
     // ── palette ─────────────────────────────────────────────
-    readonly property color cBg:      Cfg.glass
+    readonly property color cBg:      root.glassNow
+    // over a fullscreen game hyprland game mode turns blur off, so the see-through glass would show the game: go near-solid then
+    readonly property color glassNow: fsUnder ? Qt.rgba(15 / 255, 17 / 255, 25 / 255, Math.max(0.94, Cfg.glassAlpha)) : Cfg.glass
     readonly property color cCard:    "#14ffffff"
     readonly property color cHover:   "#22ffffff"
     readonly property color cBorder:  "#1fffffff"
@@ -57,13 +59,14 @@ ShellRoot {
     Shot { id: shotEditor }               // screenshot editor (HolyScreen-style), opened by hypr/scripts/screenshot.sh
     Convert { id: converter }             // radial file converter (drag files to a screen edge), hypr/scripts/convert.py
     PasswordHelper { id: pwHelper; lock: lockScreen }   // radial password helper (Ctrl+Shift+P), PwVault.qml + hypr/scripts/pwhelper.py
+    SakuraCam { id: sakuraCam; topBar: topBar }         // iPhone as a webcam: panel from the notch (Super+Alt+C), CamLink.qml + hypr/scripts/sakura-cam
     NotifPopups { id: notifPopups }
     Lock { id: lockScreen; topBar: topBar }
     Mascot { id: mascot; lock: lockScreen }
     HotCorners { id: hotCorners; converter: converter }
     Greeting { id: greeting }
     NotifCenter { id: notifCenter; topBar: topBar; settings: settings }
-    TopBar { id: topBar; genie: genie; tray: trayFlyout; dashboard: dashboard; mixer: mixer; netMenu: netMenu; powerMenu: powerMenu; notifCenter: notifCenter }
+    TopBar { id: topBar; genie: genie; tray: trayFlyout; dashboard: dashboard; mixer: mixer; netMenu: netMenu; powerMenu: powerMenu; notifCenter: notifCenter; camPanel: sakuraCam }
     Genie { id: genie; topBar: topBar }
     CornerIsland { id: cornerIsland; topBar: topBar; settings: settings }
 
@@ -84,6 +87,10 @@ ShellRoot {
         command: ["hyprctl", "activeworkspace", "-j"]
         stdout: StdioCollector { onStreamFinished: { try { root.fsUnder = JSON.parse(this.text).hasfullscreen === true; } catch (e) { root.fsUnder = false; } } }
     }
+    // keep fsUnder fresh (the dock's glass goes solid over a game, back to see-through after it)
+    Connections { target: Hyprland
+        function onRawEvent(e) { if (/^(fullscreen|workspace|focusedmon|activewindow|closewindow)/.test(e.name)) fsT.restart(); } }
+    Timer { id: fsT; interval: 300; onTriggered: fsProc.running = true }
     readonly property bool menuOnMain: menuScreen && menuScreen.name === Cfg.mainName
     property bool allApps: false
 
@@ -104,6 +111,9 @@ ShellRoot {
         case "taskmgr": return { icon: "\uf0e4", label: Cfg.tr("Task Manager"), on: false, act: "$HOME/.local/bin/taskmgr" };
         case "barpos": return { icon: "\uf2d0", label: Cfg.tr("Bar position"), on: false, act: sc + "barpos.sh toggle" };
         case "lock": return { icon: "\uf023", label: Cfg.tr("Lock"), on: false, act: Quickshell.env("HOME") + "/.config/hypr/scripts/lock.sh" };
+        // Sakura Cam: on / pause while the iPhone is connected, else the panel with the QR code
+        case "cam": return { icon: "\uf10b", label: CamLink.streaming ? Cfg.tr("Streaming") : "Sakura Cam", on: CamLink.streaming,
+                             keep: CamLink.connected, fn: () => { if (CamLink.connected) CamLink.stream(!CamLink.want); else Quickshell.execDetached(["sh", "-c", "sleep 0.25; qs ipc call cam open"]); } };
         }
         return null;
     }
@@ -197,6 +207,22 @@ ShellRoot {
     property var mctxApp: null
     property point mctxPos: Qt.point(0, 0)
     property bool mctxOpen: false
+    // windows of an app (by its dock key) - for "close" / "force quit" in the start menu's right-click menu
+    function winsOf(key) { const d = dockApps.find(x => x.key === key); return d ? d.wins : []; }
+    function mctxDo(a, it) {
+        if (!a || !it || it.sep) return;
+        const sh = root.home + "/.config/hypr/scripts/appctx.sh";
+        root.mctxOpen = false;
+        switch (it.act) {
+        case "open": a.execute(); root.hide(); break;
+        case "da": it.da.execute(); root.hide(); break;
+        case "start": root.menuTogglePin(a.id); break;
+        case "dock": root.togglePin({ key: a.id.toLowerCase(), entry: a }); break;
+        case "close": root.winsOf(a.id.toLowerCase()).forEach(w => w.close()); break;
+        case "locate": case "edit": case "uninstall": case "kill":
+            Quickshell.execDetached([sh, it.act, a.id]); if (it.act !== "kill") root.hide(); break;
+        }
+    }
     function openMctx(app, pos) { mctxApp = app; mctxPos = pos; mctxOpen = true; }
     readonly property var everyApp: DesktopEntries.applications.values
         .filter(e => !e.noDisplay)
@@ -375,7 +401,7 @@ ShellRoot {
             id: menuShape
             anchors.fill: parent
             readonly property real hill: root.menuOnMain ? (mainDock ? mainDock.hillW : 520) : (overlayDock ? overlayDock.hillW : 520)
-            readonly property string key: [win.grow, width, height, hill, win.neck, Cfg.glass].join(",")
+            readonly property string key: [win.grow, width, height, hill, win.neck, root.glassNow].join(",")
             onKeyChanged: requestPaint()
             onPaint: {
                 const c = getContext("2d"); c.reset();
@@ -394,7 +420,7 @@ ShellRoot {
                     c.lineTo(x1, H - ey);
                     c.bezierCurveTo(x1, H - ey + ey * k, x1 + ex - ex * k, H, x1 + ex, H);      // right ear
                     c.closePath();
-                    c.fillStyle = Cfg.glass;
+                    c.fillStyle = root.glassNow;
                     c.fill();
 
                 } else {
@@ -411,7 +437,7 @@ ShellRoot {
                     c.lineTo(ex, top + r);
                     c.bezierCurveTo(ex, top + r - r * k, ex + r - r * k, top, ex + r, top);
                     c.closePath();
-                    c.fillStyle = Cfg.glass;
+                    c.fillStyle = root.glassNow;
                     c.fill();
                 }
             }
@@ -917,7 +943,7 @@ ShellRoot {
                                     Text { width: parent.width - 40; elide: Text.ElideRight; text: modelData.label; font.family: root.fUi; font.pixelSize: 13; color: root.cFg; anchors.verticalCenter: parent.verticalCenter }
                                 }
                                 MouseArea { id: setArea; anchors.fill: parent; hoverEnabled: true; cursorShape: Qt.PointingHandCursor
-                                    onClicked: { settings.openPage(modelData.page); root.hide(); } }
+                                    onClicked: { if (modelData.page === "sakuracam") Quickshell.execDetached(["sh", "-c", "sleep 0.25; qs ipc call cam open"]); else settings.openPage(modelData.page); root.hide(); } }   // Sakura Cam: its panel, not the page
                             }
                         }
                     }
@@ -1030,7 +1056,7 @@ ShellRoot {
                 id: mctx
                 visible: root.mctxOpen
                 z: 51
-                width: 230
+                width: 250
                 height: mctxCol.implicitHeight + 16
                 x: Math.min(panel.width - width - 10, root.mctxPos.x)
                 y: Math.min(panel.height - height - 10, root.mctxPos.y)
@@ -1045,28 +1071,42 @@ ShellRoot {
                             const a = root.mctxApp;
                             if (!a) return [];
                             const dockKey = a.id.toLowerCase();
-                            return [
-                                { icon: "\uf04b", label: Cfg.tr("Open"), act: "open" },
-                                { icon: "\uf08d", label: Cfg.tr(root.menuIsPinned(a.id) ? "Unpin from Start" : "Pin to Start"), act: "start" },
-                                { icon: "\uf0c9", label: Cfg.tr(root.isPinned(dockKey) ? "Unpin from dock" : "Pin to dock"), act: "dock" }
-                            ];
+                            const wins = root.winsOf(dockKey);
+                            const out = [{ icon: "\uf04b", label: Cfg.tr(wins.length ? "New window" : "Open"), act: "open" }];
+                            // the app's own jump list (.desktop Actions: new private window, compose, …)
+                            for (const da of (a.actions || [])) out.push({ icon: "\uf105", label: da.name, act: "da", da: da });
+                            out.push({ sep: true });
+                            out.push({ icon: "\uf08d", label: Cfg.tr(root.menuIsPinned(a.id) ? "Unpin from Start" : "Pin to Start"), act: "start" });
+                            out.push({ icon: "\uf0c9", label: Cfg.tr(root.isPinned(dockKey) ? "Unpin from dock" : "Pin to dock"), act: "dock" });
+                            out.push({ icon: "\uf07c", label: Cfg.tr("Open file location"), act: "locate" });
+                            out.push({ icon: "\uf044", label: Cfg.tr("Edit shortcut"), act: "edit" });
+                            if (wins.length) {
+                                out.push({ sep: true });
+                                out.push({ icon: "\uf00d", label: wins.length > 1 ? Cfg.tr("Close all windows") + " (" + wins.length + ")" : Cfg.tr("Close window"), act: "close", danger: true });
+                                out.push({ icon: "\uf0e7", label: Cfg.tr("Force quit"), act: "kill", danger: true });
+                            }
+                            out.push({ sep: true });
+                            out.push({ icon: "\uf1f8", label: Cfg.tr("Uninstall"), act: "uninstall", danger: true });
+                            return out;
                         }
-                        delegate: Rectangle {
+                        delegate: Item {
                             required property var modelData
-                            width: mctxCol.width; height: 36; radius: 10
-                            color: ma.containsMouse ? root.cHover : "transparent"
-                            Text { id: mi; anchors { left: parent.left; leftMargin: 12; verticalCenter: parent.verticalCenter } width: 18
-                                text: modelData.icon; font.family: root.fIcon; font.pixelSize: 12; color: root.cAccent }
-                            Text { anchors { left: mi.right; leftMargin: 10; verticalCenter: parent.verticalCenter }
-                                text: modelData.label; font.family: root.fUi; font.pixelSize: 13; color: root.cFg }
-                            MouseArea {
-                                id: ma; anchors.fill: parent; hoverEnabled: true; cursorShape: Qt.PointingHandCursor
-                                onClicked: {
-                                    const a = root.mctxApp;
-                                    root.mctxOpen = false;
-                                    if (modelData.act === "open") { a.execute(); root.hide(); }
-                                    else if (modelData.act === "start") root.menuTogglePin(a.id);
-                                    else root.togglePin({ key: a.id.toLowerCase(), entry: a });
+                            width: mctxCol.width; height: modelData.sep ? 9 : 36
+                            Rectangle { visible: !!modelData.sep; anchors.centerIn: parent; width: parent.width - 16; height: 1; color: root.cBorder }
+                            Rectangle {
+                                visible: !modelData.sep
+                                anchors.fill: parent; radius: 10
+                                color: ma.containsMouse ? (modelData.danger ? "#26ff6b81" : root.cHover) : "transparent"
+                                Behavior on color { ColorAnimation { duration: 90 } }
+                                Text { id: mi; anchors { left: parent.left; leftMargin: 12; verticalCenter: parent.verticalCenter } width: 18
+                                    horizontalAlignment: Text.AlignHCenter
+                                    text: modelData.icon || ""; font.family: root.fIcon; font.pixelSize: 12; color: modelData.danger ? "#ff8fa3" : root.cAccent }
+                                Text { anchors { left: mi.right; leftMargin: 10; right: parent.right; rightMargin: 10; verticalCenter: parent.verticalCenter }
+                                    elide: Text.ElideRight
+                                    text: modelData.label || ""; font.family: root.fUi; font.pixelSize: 13; color: modelData.danger ? "#ffb3c1" : root.cFg }
+                                MouseArea {
+                                    id: ma; anchors.fill: parent; hoverEnabled: true; cursorShape: Qt.PointingHandCursor
+                                    onClicked: root.mctxDo(root.mctxApp, modelData)
                                 }
                             }
                         }
@@ -1219,11 +1259,12 @@ ShellRoot {
                 height: parent.height
                 onWidthChanged: requestPaint()
                 Connections { target: Cfg; function onGlassChanged() { bump.requestPaint(); } }
+                Connections { target: root; function onGlassNowChanged() { bump.requestPaint(); } }
                 onPaint: {
                     const ctx = getContext("2d"), k = 0.5523, ex = earW, ey = earH, r = corner, w = width, h = height;
                     ctx.reset();
                     if (dock.flatTop) {          // the start menu's hill is around it: just fill the hole it leaves
-                        ctx.fillStyle = Cfg.glass;
+                        ctx.fillStyle = root.glassNow;
                         ctx.fillRect(ex, 0, w - 2 * ex, h);
                         return;
                     }
@@ -1237,7 +1278,7 @@ ShellRoot {
                     ctx.lineTo(w - ex, h - ey);
                     ctx.bezierCurveTo(w - ex, h - ey + ey * k, w - ex * k, h, w, h);
                     ctx.closePath();
-                    ctx.fillStyle = Cfg.glass;      // = waybar @notch; hyprland blurs behind it (layer rule "blur-dock")
+                    ctx.fillStyle = root.glassNow;      // = waybar @notch; hyprland blurs behind it (layer rule "blur-dock")
                     ctx.fill();
                 }
             }
@@ -1338,7 +1379,7 @@ ShellRoot {
                         Behavior on opacity { NumberAnimation { duration: 150 } }
                         anchors { horizontalCenter: parent.horizontalCenter; bottom: parent.top; bottomMargin: 8 }
                         width: tip.implicitWidth + 18; height: 28; radius: 9
-                        color: Cfg.glass; border.width: 1; border.color: root.cBorder
+                        color: root.glassNow; border.width: 1; border.color: root.cBorder
                         Text { id: tip; anchors.centerIn: parent; color: root.cFg; font.family: root.fUi; font.pixelSize: 12
                             text: slot.modelData.entry ? slot.modelData.entry.name : slot.modelData.key }
                     }
@@ -1416,7 +1457,7 @@ ShellRoot {
             y: dock.implicitHeight - 60 - height - 10
             transform: Translate { y: prevBox.want ? 0 : 8; Behavior on y { NumberAnimation { duration: 180; easing.type: Easing.OutCubic } } }
             radius: 18
-            color: Cfg.glass
+            color: root.glassNow
             border.width: 0
             HoverHandler { id: prevHover; onHoveredChanged: hovered ? prevHide.stop() : prevHide.restart() }
             Row {
@@ -1499,7 +1540,7 @@ ShellRoot {
                 id: ctxBox
                 anchors.fill: parent
                 radius: 16
-                color: Cfg.glass            // the same glass as the bar and the dock (blurred: layer rule "blur-dock")
+                color: root.glassNow            // the same glass as the bar and the dock (blurred: layer rule "blur-dock")
 
                 Column {
                     id: ctxCol

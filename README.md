@@ -17,7 +17,7 @@ NVIDIA card, other setups should work but I haven't tested much.
 ## What's in it
 
 - top bar with a notch that shows media, volume, recording state
-- start menu with search (apps, files, calculator, currency, commands)
+- start menu with search (apps, files, calculator, currency, commands), right click on an app for jump list, file location, force quit, uninstall
 - dock, alt+tab with window previews, minimize animation into the bar
 - settings app: displays, sound, colors (vibrance, night light), network, keyboard/mouse, RGB
 - notification center, OSD, clipboard history, screenshot editor with OCR
@@ -25,6 +25,7 @@ NVIDIA card, other setups should work but I haven't tested much.
 - capture overlay (instant replay / recording via gpu-screen-recorder)
 - lock screen and an SDDM theme that look the same, Plymouth splash
 - password helper (vault key lives in gnome-keyring)
+- Sakura Cam: use an iPhone as a webcam through Safari, no app needed (needs v4l2loopback, see config/hypr/scripts/sakura-cam/README.md)
 - Sakura Sound: a separate SoundCloud player (own quickshell config + python backend)
 - task manager, calculator, file converter and archive menus for Dolphin
 - accent color is picked from the wallpaper and pushed to kitty, qt6ct, Kvantum, rofi and a Vencord theme

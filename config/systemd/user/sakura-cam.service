@@ -1,0 +1,14 @@
+[Unit]
+Description=Sakura Cam - iPhone as a webcam (sakura mono)
+After=pipewire-pulse.service network-online.target
+Wants=pipewire-pulse.service
+
+[Service]
+ExecStart=%h/.config/hypr/scripts/sakura-cam/.venv/bin/python -I %h/.config/hypr/scripts/sakura-cam/server.py
+WorkingDirectory=%h/.config/hypr/scripts/sakura-cam
+Restart=on-failure
+RestartSec=3
+Nice=-2
+
+[Install]
+WantedBy=graphical-session.target

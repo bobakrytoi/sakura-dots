@@ -53,7 +53,8 @@ Singleton {
         { id: "night",      name: "Night light", icon: "" },
         { id: "taskmgr",    name: "Task Manager", icon: "" },
         { id: "barpos",     name: "Bar position", icon: "" },
-        { id: "lock",       name: "Lock",       icon: "" }
+        { id: "lock",       name: "Lock",       icon: "" },
+        { id: "cam",        name: "Sakura Cam", icon: "\uf10b" }
     ]
     readonly property var shortcutCatalog: [
         { id: "sound",      name: "Sound",          icon: "" },
@@ -71,7 +72,8 @@ Singleton {
         { id: "power",      name: "Power & Sleep",  icon: "" },
         { id: "storage",    name: "Storage",        icon: "" },
         { id: "color",      name: "Color Control",  icon: "" },
-        { id: "about",      name: "About",          icon: "" }
+        { id: "about",      name: "About",          icon: "" },
+        { id: "sakuracam",  name: "Sakura Cam",     icon: "\uf10b" }
     ]
     readonly property var powerCatalog: [
         { id: "lock",     name: "Lock",      icon: "" },
@@ -283,6 +285,62 @@ Singleton {
 
     // ── Russian ─────────────────────────────────────────────
     readonly property var ru: ({
+        // Sakura Cam (SakuraCam.qml, CamLink.qml, Settings > Sakura Cam)
+        "after": "после того, как",
+        "closes the camera": "закроет камеру",
+        "the app": "приложение",
+        "Now": "Сейчас",
+        "Sakura Cam is not running": "Sakura Cam не запущен",
+        "Open Sakura Cam on your iPhone": "Открой Sakura Cam на айфоне",
+        "Camera on": "Камера включена",
+        "Camera paused": "Камера на паузе",
+        "Camera off": "Камера выключена",
+        "iPhone connected": "Айфон подключён",
+        "iPhone disconnected": "Айфон отключился",
+        "The camera service is not running.": "Сервис камеры не запущен.",
+        "Scan with the iPhone camera. The first time it walks you through a one-time setup.": "Наведи камеру айфона. В первый раз будет короткая настройка, один раз.",
+        "Turn on Personal Hotspot and plug the iPhone in": "Включи режим модема и подключи айфон кабелем",
+        "Start it: systemctl --user start sakura-cam": "Запусти: systemctl --user start sakura-cam",
+        "The virtual camera is not set up yet (v4l2loopback). The picture will not reach apps until it is.": "Виртуальная камера ещё не настроена (v4l2loopback). Пока её нет, картинка не дойдёт до приложений.",
+        "Starting the camera…": "Запускаю камеру…",
+        "Paused": "Пауза",
+        "Your iPhone as a webcam, like iVCam, without an app: the camera page runs in Safari and streams to the PC over Wi-Fi or a USB cable. Apps see it as “Sakura Cam”.": "Айфон как вебкамера, как iVCam, только без приложения: страница камеры работает в Safari и шлёт видео на ПК по Wi-Fi или кабелю. Приложения видят её как «Sakura Cam».",
+        "Streaming": "В эфире",
+        "iPhone connected, paused": "Айфон подключён, пауза",
+        "Waiting for the iPhone": "Жду айфон",
+        "Scan the code with the iPhone camera. The first time a short setup installs a certificate (Safari needs HTTPS for the camera); then add the page to the Home Screen.": "Наведи камеру айфона на код. В первый раз короткая настройка поставит сертификат (Safari даёт камеру только по HTTPS), потом добавь страницу на экран «Домой».",
+        "Auto": "Авто",
+        "USB: turn on Personal Hotspot on the iPhone and plug it in": "USB: включи на айфоне режим модема и подключи кабелем",
+        "Open the panel": "Открыть панель",
+        "Disconnect the phone": "Отключить телефон",
+        "What apps get; the phone sends the same": "Что получают приложения; телефон шлёт столько же",
+        "Frame rate": "Частота кадров",
+        "Higher = sharper, the phone gets warmer": "Выше = чётче, телефон греется сильнее",
+        "Saver": "Экономно",
+        "Fill crops to 16:9, Fit keeps the whole frame with bars": "«Заполнить» обрезает до 16:9, «Вписать» оставляет весь кадр с полями",
+        "Flips what apps see": "Отражает то, что видят приложения",
+        "Camera": "Камера",
+        "Lens": "Объектив",
+        "Also switchable on the phone and in the panel": "Переключается и на телефоне, и в панели",
+        "Front": "Фронт",
+        "Phone microphone": "Микрофон телефона",
+        "Shows up as an input device “Sakura Mic”": "Появится как устройство ввода «Sakura Mic»",
+        "Start the camera when the phone connects": "Включать камеру, когда телефон подключился",
+        "Otherwise it waits for the button or the shortcut": "Иначе ждёт кнопку или хоткей",
+        "Shortcut": "Сочетание клавиш",
+        "Camera on / off": "Камера вкл / выкл",
+        "Resume": "Продолжить",
+        "phone": "телефон",
+        "Status": "Состояние",
+        "Service": "Сервис",
+        "stopped": "остановлен",
+        "Virtual camera": "Виртуальная камера",
+        "an app holds the old size until it closes the camera": "приложение держит старый размер, пока не закроет камеру",
+        "Not set up: install v4l2loopback (the commands are in the handoff notes), then restart the service.": "Не настроена: поставь v4l2loopback (команды в HANDOFF), потом перезапусти сервис.",
+        "No network": "Нет сети",
+        "While the iPhone streams": "Пока айфон снимает",
+        "Backend: ~/.config/hypr/scripts/sakura-cam (server.py, user service sakura-cam) · certificates: ~/.local/share/sakura/cam": "Бэкенд: ~/.config/hypr/scripts/sakura-cam (server.py, user-сервис sakura-cam) · сертификаты: ~/.local/share/sakura/cam",
+        "Already used by": "Уже занято:",
         // file converter (Convert.qml)
         "File converter": "Конвертер файлов",
         "File converter: drag files from Dolphin into that corner and drop them on a petal. The screen-edge catchers are off while a corner has it.": "Конвертер файлов: перетащи файлы из Dolphin в этот угол и брось на лепесток. Пока он назначен углу, зоны по краям экрана выключены.",
@@ -429,6 +487,8 @@ Singleton {
         "Log out": "Выйти", "Sleep": "Сон", "Restart": "Перезагрузка", "Shut down": "Выключение", "up": "работает",
         "Open": "Открыть", "Pin to Start": "Закрепить в Пуске", "Unpin from Start": "Открепить от Пуска",
         "Pin to dock": "Закрепить в доке", "Unpin from dock": "Открепить от дока",
+        "Open file location": "Расположение файла", "Edit shortcut": "Изменить ярлык", "Close all windows": "Закрыть все окна",
+        "New window": "Новое окно", "Close window": "Закрыть окно", "Force quit": "Завершить принудительно", "Uninstall": "Удалить",
         "Search the web for": "Искать в интернете", "Enter to copy": "Enter - скопировать", "command": "команда",
         // tray
         "Hidden icons": "Скрытые значки", "Pin to bar": "Закрепить на панели", "Unpin from bar": "Открепить от панели",

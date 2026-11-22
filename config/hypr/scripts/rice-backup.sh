@@ -130,6 +130,8 @@ for n in $CONF; do cp -a "$H/.config/$n" "$R/config/"; done
 # leftovers that only make sense here
 find "$R/config" \( -name '*.bak*' -o -name '*.tmp' -o -name '*.orig' -o -name '__pycache__' \) -prune -exec rm -rf {} + 2>/dev/null || true
 rm -f "$R/config/hypr/monitors.lua"
+rm -rf "$R/config/hypr/scripts/sakura-cam/.venv"      # Sakura Cam: 250 MB of wheels, rebuilt from its README (uv venv + pip)
+[ -f "$H/.config/systemd/user/sakura-cam.service" ] && { mkdir -p "$R/config/systemd/user"; cp -a "$H/.config/systemd/user/sakura-cam.service" "$R/config/systemd/user/"; }
 # per-app rules: .backupignore (globs relative to the app folder) and an executable backup-clean (gets the copied folder)
 for d in "$R"/config/*/; do
   [ -f "$d/.backupignore" ] && [ $PERSONAL = 0 ] && while IFS= read -r g; do

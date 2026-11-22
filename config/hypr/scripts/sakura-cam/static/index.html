@@ -1,0 +1,69 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Sakura Cam">
+<meta name="theme-color" content="#0b0c12">
+<title>Sakura Cam</title>
+<link rel="manifest" href="/manifest.webmanifest">
+<link rel="apple-touch-icon" href="/apple-touch-icon.png">
+<link rel="icon" href="/icon-192.png">
+<link rel="stylesheet" href="/style.css">
+</head>
+<body class="searching">
+<div id="stage">
+  <div id="aura"></div>
+  <video id="video" playsinline muted autoplay></video>
+</div>
+
+<div id="card">
+  <div id="lensArt"><em></em><i></i><b></b></div>
+  <div id="cardTitle">Sakura Cam</div>
+  <div id="cardText"></div>
+  <button id="cardBtn" hidden></button>
+</div>
+
+<div class="edge" id="status">
+  <div class="body">
+    <span class="ear l"></span><span class="ear r"></span>
+    <span class="dot"></span><span id="stTitle">Sakura Cam</span><span id="stInfo"></span>
+  </div>
+</div>
+
+<div class="edge" id="dock">
+  <div class="body">
+    <span class="ear l"></span><span class="ear r"></span>
+    <div id="lenses"></div>
+    <div class="row">
+      <div class="col">
+        <button class="btn" id="flip" aria-label="flip">
+          <svg viewBox="0 0 24 24"><path d="M4 9a8 8 0 0 1 14.5-3.5L20 7"/><path d="M20 3v4h-4"/><path d="M20 15a8 8 0 0 1-14.5 3.5L4 17"/><path d="M4 21v-4h4"/></svg>
+        </button>
+        <button class="btn" id="torch" aria-label="torch">
+          <svg viewBox="0 0 24 24"><path d="M8 3h8l-1.5 5h-5z"/><path d="M9.5 8h5v4l-1 9h-3l-1-9z"/><path d="M12 13v2"/></svg>
+        </button>
+      </div>
+      <button id="live" aria-label="live"><span class="ring"></span><span class="spin"></span><span class="core"></span></button>
+      <div class="col">
+        <button class="btn" id="mic" aria-label="mic">
+          <svg viewBox="0 0 24 24"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5.5 11a6.5 6.5 0 0 0 13 0"/><path d="M12 17.5V21"/></svg>
+        </button>
+        <button class="btn" id="dark" aria-label="black screen">
+          <svg viewBox="0 0 24 24"><path d="M20 14.5A8 8 0 1 1 9.5 4a6.5 6.5 0 0 0 10.5 10.5z"/></svg>
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div id="zoomTip">1.0×</div>
+<div id="toast"></div>
+<div id="black"><div id="blackInfo"><span class="dot"></span><span id="blackText">Sakura Cam</span></div></div>
+<video id="keep" playsinline muted loop src="/keepawake.mp4" style="position:fixed;width:1px;height:1px;opacity:0;pointer-events:none"></video>
+<script src="/app.js"></script>
+</body>
+</html>

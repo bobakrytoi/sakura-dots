@@ -4,6 +4,7 @@ import Quickshell.Io
 import Quickshell.Widgets
 import Quickshell.Services.Pipewire
 import QtQuick
+import QtMultimedia
 import QtQuick.Effects
 import QtQuick.Layouts
 
@@ -65,7 +66,8 @@ Scope {
         { g: "Apps", pages: [
             { id: "apps", icon: "", label: "Default apps", k: "browser default open with браузер по умолчанию" },
             { id: "music", icon: "\uf001", label: "Music", k: "sakura sound soundcloud player music cookies музыка плеер саундклауд" },
-            { id: "passwords", icon: "\uf084", label: "Password helper", k: "password vault keyring generator clipboard history hotkey пароль пароли хранилище генератор буфер история" } ] }
+            { id: "passwords", icon: "\uf084", label: "Password helper", k: "password vault keyring generator clipboard history hotkey пароль пароли хранилище генератор буфер история" },
+            { id: "sakuracam", icon: "\uf10b", label: "Sakura Cam", k: "iphone webcam camera ivcam phone qr айфон вебкамера камера телефон" } ] }
     ]
     function pageVisible(p) {
         if (p.needs && !Cfg.has[p.needs]) return false;
@@ -88,6 +90,7 @@ Scope {
         taskbar: "bar wings modules wheel dock icons autohide badges switcher alt tab hot corners бар крылья модули колесо док иконки автоскрытие значки переключатель углы",
         time: "date format weather world clock pomodoro timezone alarm sound notification sound дата формат погода мировое время помодоро звук будильника звук уведомлений",
         input: "keyboard layout mouse speed клавиатура раскладка мышь", network: "wifi vpn mullvad сеть",
+        sakuracam: "resolution fps quality mirror rotate fit microphone lens usb wifi qr shortcut v4l2loopback разрешение качество зеркало поворот микрофон объектив кабель",
         passwords: "shortcut ctrl shift p length symbols look-alikes strength auto-clear ignored lock auto-lock delete glass blur ring сочетание длина символы сила автоочистка блокировка удалить стекло кольцо"
     })
 
@@ -986,6 +989,132 @@ Scope {
                         }
                     }
                     Note { text: pwPage.t("Port of the Windows “Password helper” (C#/WPF). Backend: ~/.config/hypr/scripts/pwhelper.py · shortcut file: ~/.config/hypr/pwhelper.lua") }
+                }
+
+                // ── SAKURA CAM (SakuraCam.qml + CamLink.qml, settings.json "cam") ─
+                Column {
+                    id: camPage
+                    visible: st.page === "sakuracam"; width: parent.width; spacing: 12
+                    readonly property var c: CamLink.o
+                    Title { text: "Sakura Cam" }
+                    Note { text: st.t("Your iPhone as a webcam, like iVCam, without an app: the camera page runs in Safari and streams to the PC over Wi-Fi or a USB cable. Apps see it as “Sakura Cam”.") }
+
+                    Heading { text: st.t("Connect") }
+                    Card {
+                        height: 236
+                        Rectangle {
+                            id: camQrBox
+                            x: 18; anchors.verticalCenter: parent.verticalCenter
+                            width: 200; height: 200; radius: 16; color: "#eceef4"
+                            Image { id: camQr; anchors { fill: parent; margins: 16 } smooth: false; cache: false; asynchronous: true
+                                    source: camPage.visible && st.shown && CamLink.up ? CamLink.qrUrl() : ""; sourceSize: Qt.size(336, 336) }
+                            Text { anchors.centerIn: parent; visible: camQr.status !== Image.Ready; text: "\u{F0567}"; font.family: st.fIcon; font.pixelSize: 34; color: st.cMuted }
+                        }
+                        Column {
+                            anchors { left: camQrBox.right; leftMargin: 20; right: parent.right; rightMargin: 18; verticalCenter: parent.verticalCenter }
+                            spacing: 10
+                            Row {
+                                spacing: 8
+                                Rectangle { width: 9; height: 9; radius: 5; anchors.verticalCenter: parent.verticalCenter
+                                            color: !CamLink.up ? "#ff8b9a" : CamLink.streaming ? st.cAccent : CamLink.connected ? "#c8cbd6" : st.cMuted }
+                                Text { color: st.cFg; font.family: st.fUi; font.pixelSize: 15; font.weight: Font.DemiBold
+                                       text: !CamLink.up ? st.t("The camera service is not running.") : CamLink.streaming ? st.t("Streaming") + " · " + CamLink.resText
+                                             : CamLink.connected ? st.t("iPhone connected, paused") : st.t("Waiting for the iPhone") }
+                            }
+                            Text { width: parent.width; wrapMode: Text.WordWrap; color: st.cMuted; font.family: st.fUi; font.pixelSize: 12
+                                   text: st.t("Scan the code with the iPhone camera. The first time a short setup installs a certificate (Safari needs HTTPS for the camera); then add the page to the Home Screen.") }
+                            Choice { options: [ { v: "auto", t: "Auto" }, { v: "wifi", t: "Wi-Fi" }, { v: "usb", t: "USB" } ]
+                                     value: camPage.c.net; onPicked: v => { CamLink.set("net", v); CamLink.qrSerial++; } }
+                            Text { width: parent.width; elide: Text.ElideMiddle; color: st.cMuted; font.family: st.fUi; font.pixelSize: 11
+                                   text: { const u = CamLink.st.urls || {}, n = camPage.c.net;
+                                           return n === "usb" && !u.usb ? st.t("USB: turn on Personal Hotspot on the iPhone and plug it in")
+                                                : (n === "auto" ? (u.usb || u.wifi || u.lan || "") : (u[n] || u.lan || "")); } }
+                            Row { spacing: 8
+                                Btn { text: st.t("Open the panel"); primary: true; onClicked: { st.shown = false; Quickshell.execDetached(["sh", "-c", "sleep 0.3; qs ipc call cam open"]); } }
+                                Btn { visible: CamLink.connected; text: st.t("Disconnect the phone"); onClicked: CamLink.cmd({ cmd: "kick" }) } }
+                        }
+                    }
+
+                    Heading { text: st.t("Picture") }
+                    Card {
+                        height: camPicCol.implicitHeight + 8
+                        Column {
+                            id: camPicCol; y: 4; width: parent.width
+                            Row2 { label: st.t("Resolution"); sub: CamLink.sizePinned ? st.t("Now") + " " + CamLink.st.out.h + "p · " + CamLink.pinnedNote : st.t("What apps get; the phone sends the same")
+                                Choice { options: [ { v: "720p", t: "720p" }, { v: "1080p", t: "1080p" } ]; value: camPage.c.res; onPicked: v => CamLink.set("res", v) } }
+                            Row2 { label: st.t("Frame rate")
+                                Choice { options: [ { v: 30, t: "30 fps" }, { v: 60, t: "60 fps" } ]; value: camPage.c.fps; onPicked: v => CamLink.set("fps", v) } }
+                            Row2 { label: st.t("Quality"); sub: st.t("Higher = sharper, the phone gets warmer")
+                                Choice { options: [ { v: 4, t: "Saver" }, { v: 8, t: "Normal" }, { v: 14, t: "High" } ]; value: camPage.c.bitrate; onPicked: v => CamLink.set("bitrate", v) } }
+                            Row2 { label: st.t("Fit"); sub: st.t("Fill crops to 16:9, Fit keeps the whole frame with bars")
+                                Choice { options: [ { v: "fill", t: "Fill" }, { v: "fit", t: "Fit" } ]; value: camPage.c.fit; onPicked: v => CamLink.set("fit", v) } }
+                            Row2 { label: st.t("Rotate")
+                                Choice { options: [ { v: 0, t: "0°" }, { v: 90, t: "90°" }, { v: 180, t: "180°" }, { v: 270, t: "270°" } ]; value: camPage.c.rotate; onPicked: v => CamLink.set("rotate", v) } }
+                            Row2 { label: st.t("Mirror"); sub: st.t("Flips what apps see")
+                                Toggle { on: camPage.c.mirror; onToggled: CamLink.set("mirror", !camPage.c.mirror) } }
+                        }
+                    }
+
+                    Heading { text: st.t("Camera") }
+                    Card {
+                        height: camCamCol.implicitHeight + 8
+                        Column {
+                            id: camCamCol; y: 4; width: parent.width
+                            Row2 { label: st.t("Lens"); sub: st.t("Also switchable on the phone and in the panel")
+                                Choice { options: [ { v: "wide", t: "0.5×" }, { v: "back", t: "1×" }, { v: "tele", t: "2×" }, { v: "front", t: "Front" } ]
+                                         value: camPage.c.camera; onPicked: v => CamLink.set("camera", v) } }
+                            Row2 { label: st.t("Phone microphone"); sub: st.t("Shows up as an input device “Sakura Mic”")
+                                Toggle { on: camPage.c.mic; onToggled: CamLink.set("mic", !camPage.c.mic) } }
+                            Row2 { label: st.t("Start the camera when the phone connects"); sub: st.t("Otherwise it waits for the button or the shortcut")
+                                Toggle { on: camPage.c.autostream; onToggled: CamLink.set("autostream", !camPage.c.autostream) } }
+                            Row2 { label: st.t("Shortcut"); sub: CamLink.hkError !== "" ? CamLink.hkError : st.t("Camera on / off")
+                                Choice { options: [ { v: "SUPER + ALT + C", t: "Super+Alt+C" }, { v: "CTRL + ALT + C", t: "Ctrl+Alt+C" }, { v: "SUPER + ALT + W", t: "Super+Alt+W" }, { v: "", t: "Off" } ]
+                                         value: camPage.c.hotkey; onPicked: v => CamLink.setHotkey(v) } }
+                        }
+                    }
+
+                    Heading { text: st.t("Preview"); visible: CamLink.streaming }
+                    Card {
+                        visible: CamLink.streaming
+                        height: camPrev.height + 36
+                        Rectangle {
+                            id: camPrev
+                            x: 18; y: 18; width: Math.min(480, parent.width - 36); height: Math.round(width * 9 / 16); radius: 14; color: "#0b0c12"; clip: true
+                            // the server's 25 fps mjpeg preview (the v4l2 device stays free for apps)
+                            MediaPlayer {
+                                id: camPv; videoOutput: camVo
+                                readonly property bool want: camPage.visible && st.shown && CamLink.streaming
+                                function restart() { if (want) { source = CamLink.api + "/preview.mjpeg?t=" + Date.now(); play(); } else { stop(); source = ""; } }
+                                onWantChanged: restart()
+                                onErrorOccurred: camPvRetry.restart()
+                                onMediaStatusChanged: if (mediaStatus === MediaPlayer.EndOfMedia) camPvRetry.restart()
+                            }
+                            Timer { id: camPvRetry; interval: 1200; onTriggered: camPv.restart() }
+                            VideoOutput { id: camVo; anchors.fill: parent; fillMode: VideoOutput.PreserveAspectCrop }
+                        }
+                        Column {
+                            anchors { left: camPrev.right; leftMargin: 18; right: parent.right; rightMargin: 18; verticalCenter: camPrev.verticalCenter }
+                            spacing: 8
+                            Text { width: parent.width; wrapMode: Text.WordWrap; color: st.cMuted; font.family: st.fUi; font.pixelSize: 12
+                                   text: [CamLink.resText, CamLink.st.rtt ? CamLink.st.rtt + " ms" : "", CamLink.phone.w ? st.t("phone") + " " + CamLink.phone.w + "×" + CamLink.phone.h : ""].filter(x => x).join("\n") }
+                            Btn { text: CamLink.want ? st.t("Pause") : st.t("Resume"); onClicked: CamLink.stream(!CamLink.want) }
+                        }
+                    }
+
+                    Heading { text: st.t("Status") }
+                    Card {
+                        height: camStCol.implicitHeight + 8
+                        Column {
+                            id: camStCol; y: 4; width: parent.width
+                            Row2 { label: st.t("Service"); sub: CamLink.up ? "sakura-cam.service · " + st.t("running") : "sakura-cam.service · " + st.t("stopped")
+                                Btn { text: CamLink.up ? st.t("Restart") : st.t("Start"); onClicked: Quickshell.execDetached(["systemctl", "--user", CamLink.up ? "restart" : "start", "sakura-cam.service"]) } }
+                            Row2 { label: st.t("Virtual camera")
+                                   sub: CamLink.device ? "Sakura Cam · " + CamLink.device + (CamLink.outError === "busy" ? " · " + st.t("an app holds the old size until it closes the camera") : "")
+                                        : st.t("Not set up: install v4l2loopback (the commands are in the handoff notes), then restart the service.") }
+                            Row2 { label: st.t("Network"); sub: CamLink.ifaces.length ? CamLink.ifaces.map(i => (i.kind === "usb" ? "USB" : i.kind === "wifi" ? "Wi-Fi" : "LAN") + " " + i.ip).join(" · ") + " · sakura-cam.local" : st.t("No network") }
+                        }
+                    }
+                    Note { text: st.t("Backend: ~/.config/hypr/scripts/sakura-cam (server.py, user service sakura-cam) · certificates: ~/.local/share/sakura/cam") }
                 }
 
                 // ── SOUND ───────────────────────────
@@ -2021,7 +2150,7 @@ Scope {
                             id: liveCol; y: 4; width: parent.width
                             Repeater {
                                 model: [ { k: "Music", t: "Music", s: "Cover and bars beside the clock" }, { k: "Track", t: "Track change", s: "Title and artist for a moment" },
-                                         { k: "Rec", t: "Recording" }, { k: "Timer", t: "Timer and stopwatch" }, { k: "Share", t: "Screen sharing" },
+                                         { k: "Rec", t: "Recording" }, { k: "Cam", t: "Sakura Cam", s: "While the iPhone streams" }, { k: "Timer", t: "Timer and stopwatch" }, { k: "Share", t: "Screen sharing" },
                                          { k: "Mic", t: "Microphone in use", s: "Which app listens" }, { k: "Replay", t: "Instant Replay", s: "It runs all the time" } ]
                                 Row2 {
                                     id: liveRow2

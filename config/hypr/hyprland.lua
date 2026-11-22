@@ -486,7 +486,7 @@ hl.window_rule({ name = "glass-kate",    match = { class = "^(org.kde.kate|org.k
 hl.window_rule({ name = "size-ark",      match = { class = "^(org.kde.ark)$" },     size = "900 600" })
 
 -- blur behind bar, menus, notifications, dock
-for _, ns in ipairs({ "waybar", "waybar-left", "waybar-right", "rofi", "swaync-control-center", "swaync-notification-window", "nwg-dock", "swayosd", "notes", "sketch", "edge-tab", "trayflyout", "dock", "topbar", "desktop-widgets", "power", "netmenu", "wallpicker", "desktopmenu", "widget-editor", "clipboard", "archive", "notifications", "notifcenter", "mascot", "corner-island", "sakura-sound-mini", "shot", "shot-pin", "convert", "convert-progress" }) do
+for _, ns in ipairs({ "waybar", "waybar-left", "waybar-right", "rofi", "swaync-control-center", "swaync-notification-window", "nwg-dock", "swayosd", "notes", "sketch", "edge-tab", "trayflyout", "dock", "topbar", "desktop-widgets", "power", "netmenu", "wallpicker", "desktopmenu", "widget-editor", "clipboard", "archive", "notifications", "notifcenter", "mascot", "corner-island", "sakura-sound-mini", "shot", "shot-pin", "convert", "convert-progress", "sakuracam" }) do
     hl.layer_rule({ name = "blur-" .. ns, match = { namespace = "^(" .. ns .. ")$" }, blur = true, ignore_alpha = 0.2 })
 end
 hl.layer_rule({ name = "anim-rofi",   match = { namespace = "^(rofi)$" },   animation = "popin 95%" })
@@ -634,6 +634,12 @@ do
     local pf = os.getenv("HOME") .. "/.config/hypr/pwhelper.lua"
     local f = io.open(pf, "r")
     if f then f:close(); pcall(dofile, pf) end
+end
+-- Sakura Cam (quickshell SakuraCam.qml / CamLink.qml): its hotkey lives in sakuracam.lua, written by Settings > Sakura Cam
+do
+    local cf = os.getenv("HOME") .. "/.config/hypr/sakuracam.lua"
+    local f = io.open(cf, "r")
+    if f then f:close(); pcall(dofile, cf) end
 end
 hl.layer_rule({ name = "blur-pwhelper", match = { namespace = "^(pwhelper)$" }, blur = true, ignore_alpha = 0.05, no_anim = true })   -- frosted backdrop; it animates itself
 hl.window_rule({ name = "settings-app", match = { title = "^(Settings)$", class = "^(org.quickshell)$" }, float = true, center = true, size = "1120 740" })

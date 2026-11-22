@@ -22,6 +22,7 @@ Scope {
     property var netMenu: null
     property var powerMenu: null
     property var notifCenter: null          // NotifCenter.qml (our own notifications, no swaync)
+    property var camPanel: null             // SakuraCam.qml (iPhone webcam), flows out of the notch
     function openUnder(menu, bar, btn) { if (menu) menu.toggleAt(bar.screenName, btn.mapToItem(null, btn.width / 2, 0).x); }
 
     readonly property int deep: 40          // notch height (= the space reserved at the top)
@@ -493,7 +494,7 @@ Scope {
             // it (see drawShape), so the bar itself is gone meanwhile - at once, else two shapes would show
             readonly property bool dropped:
                 (!!tb.dashboard && tb.dashboard.covering === modelData.name) ||
-                [tb.tray, tb.mixer, tb.netMenu, tb.powerMenu, tb.notifCenter].some(m => !!m && m.covering === modelData.name)
+                [tb.tray, tb.mixer, tb.netMenu, tb.powerMenu, tb.notifCenter, tb.camPanel].some(m => !!m && m.covering === modelData.name)
             onDroppedChanged: if (dropped) { open = false; hotItem = null; tipText = ""; }
 
             // a gulp: the notch swells for a moment and springs back (Genie.qml: a window flies in or out of it)
@@ -560,6 +561,8 @@ Scope {
                 else if (a === "rec" || a === "replay") tb.run("qs ipc call capture toggle");
                 else if (a === "timer") tb.run("qs ipc call dashboard open timers");
                 else if (a === "mic") tb.openUnder(tb.mixer, win, btn);
+                else if (a === "cam" && m.button === Qt.MiddleButton) CamLink.stream(!CamLink.want);
+                else if (a === "cam") tb.openUnder(tb.camPanel, win, btn);
             }
             Behavior on aw { NumberAnimation { duration: 260 * Cfg.anim; easing.type: Easing.OutCubic } }
             Behavior on awR { NumberAnimation { duration: 260 * Cfg.anim; easing.type: Easing.OutCubic } }

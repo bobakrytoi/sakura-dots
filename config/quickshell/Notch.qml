@@ -7,7 +7,7 @@ pragma Singleton
 //    nothing changes); when the shell is down vol.sh falls back to swayosd.
 //  · Notices: a short line for ~2.5 s - screenshot saved, DND, timer done, clip saved, wallpaper, VPN…
 //    QML: Notch.notice("shot", "Screenshot saved")   shell: qs ipc call notice say shot "Screenshot saved"
-//    kinds (icon): shot clip timer dnd dndoff wall vpn vpnoff mute unmute mic micoff copy info battery batterylow
+//    kinds (icon): cam shot clip timer dnd dndoff wall vpn vpnoff mute unmute mic micoff copy info battery batterylow
 //    The text goes through Cfg.tr when shown, so scripts send English.
 import Quickshell
 import Quickshell.Io
@@ -35,7 +35,7 @@ Singleton {
         shot: "\u{F0100}", clip: "\u{F0567}", timer: "\u{F051B}", dnd: "\u{F009B}", dndoff: "\u{F009A}",
         wall: "\u{F02E9}", vpn: "\u{F0582}", vpnoff: "\u{F099D}", mute: "\u{F075F}", unmute: "\u{F057E}",
         mic: "\u{F036C}", micoff: "\u{F036D}", copy: "\u{F018F}", info: "\u{F02FC}", battery: "\u{F0079}", batterylow: "\u{F0083}",
-        music: "\u{F075A}", rec: "\u{F044A}", replay: "\u{F0459}", share: "\u{F1483}", stopwatch: "\u{F13AB}"
+        music: "\u{F075A}", cam: "\u{F0567}", rec: "\u{F044A}", replay: "\u{F0459}", share: "\u{F1483}", stopwatch: "\u{F13AB}"
     })
     function glyph(k) { return glyphs[k] || glyphs.info; }
     function osdGlyph() {
@@ -276,9 +276,15 @@ Singleton {
     onMicChanged: if (mic && armed) notice("mic", Cfg.tr("Microphone") + " · " + micApps.join(", "))
     onShareChanged: if (share && armed) notice("share", Cfg.tr("Screen sharing") + (shareApps.length ? " · " + shareApps.join(", ") : ""))
 
+    // Sakura Cam (CamLink.qml): the iPhone streams as a webcam
+    readonly property bool cam: liveOn("Cam") && CamLink.streaming
+    readonly property string camText: CamLink.since > 0 ? Timers.fmt(Math.max(0, Timers.now - CamLink.since)) : ""
+    onCamChanged: if (armed) notice("cam", cam ? Cfg.tr("Camera on") + " · iPhone" : Cfg.tr("Camera off"))
+
     readonly property var acts: {
         const a = [];
         if (rec || fake === "rec") a.push("rec");
+        if (cam || fake === "cam") a.push("cam");
         if (timerOn || fake === "timer") a.push("timer");
         if (music || fake === "music") a.push("music");
         if (share || fake === "share") a.push("share");
@@ -293,11 +299,11 @@ Singleton {
     // what the activity shows: left (an icon; music: the cover) and right (a value; music: the bars)
     function actGlyph(a) { return a === "timer" ? timerGlyph : a === "mic" && micMuted ? glyphs.micoff : glyphs[a] || glyphs.info; }
     function actText(a) {
-        return a === "rec" ? recText : a === "timer" ? timerText : a === "mic" ? (micApps[0] || "") : a === "share" ? (shareApps[0] || "")
+        return a === "rec" ? recText : a === "cam" ? camText : a === "timer" ? timerText : a === "mic" ? (micApps[0] || "") : a === "share" ? (shareApps[0] || "")
              : a === "replay" ? Cfg.tr("Replay") : "";
     }
     function actTip(a) {
-        return a === "music" ? track : a === "rec" ? Cfg.tr("Recording") : a === "timer" ? timerTip
+        return a === "music" ? track : a === "rec" ? Cfg.tr("Recording") : a === "cam" ? "Sakura Cam · " + CamLink.resText : a === "timer" ? timerTip
              : a === "mic" ? Cfg.tr("Microphone") + " · " + micApps.join(", ") : a === "share" ? Cfg.tr("Screen sharing") + " · " + shareApps.join(", ")
              : a === "replay" ? Cfg.tr("Instant Replay") : "";
     }
