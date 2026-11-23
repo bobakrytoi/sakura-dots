@@ -1154,7 +1154,10 @@ ShellRoot {
             const key = appOf(t);
             if (!key || seen[key]) continue;
             seen[key] = true;
-            const e = everyApp.find(x => x.id.toLowerCase() === key) || DesktopEntries.heuristicLookup(key);
+            // by .desktop id, then by its StartupWMClass (Electron apps often name the window differently from the .desktop file)
+            const e = everyApp.find(x => x.id.toLowerCase() === key)
+                   || everyApp.find(x => String(x.startupClass || "").toLowerCase() === key)
+                   || DesktopEntries.heuristicLookup(t.appId) || DesktopEntries.heuristicLookup(key);
             out.push({ key: key, entry: e, wins: tops.filter(w => appOf(w) === key) });
         }
         return out;

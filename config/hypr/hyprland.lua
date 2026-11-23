@@ -834,10 +834,14 @@ do
         for _, b in ipairs(__altDrag or {}) do pcall(function() b:set_enabled(not on) end) end
         if __asGame then pcall(__asGame, on) end   -- autoscroll off: the middle button belongs to the game
         if on then
-            saved = {
+            local now = {
                 anim = get("animations.enabled"), blur = get("decoration.blur.enabled"), wobble = get("decoration.wobble.enabled"),
                 shadow = get("decoration.shadow.enabled"), dim = get("decoration.dim_inactive"),
             }
+            -- quick game -> desktop -> game: the restore (async hyprctl eval) may not have landed yet, so "now" still
+            -- reads game-mode values; keep the last good snapshot then, or the jelly / blur would stay off for good
+            local looksOff = now.anim == false and now.blur == false and now.shadow == false and now.wobble == false
+            if not (looksOff and saved) then saved = now end
             hl.config({ animations = { enabled = false },
                         decoration = { blur = { enabled = false }, shadow = { enabled = false }, dim_inactive = false, wobble = { enabled = false } } })
         elseif saved then
@@ -854,6 +858,13 @@ do
     hl.on("window.fullscreen", function() check() end)
     hl.on("window.destroy", function() hl.exec_cmd("sleep 0.2; hyprctl eval '__gameCheck()'") end)
     function __gameCheck() check() end
+    -- the desktop look as the config files set it, taken once the config is loaded (before any game)
+    function __gameBase()
+        if __gameMode then return end
+        saved = { anim = get("animations.enabled"), blur = get("decoration.blur.enabled"), wobble = get("decoration.wobble.enabled"),
+                  shadow = get("decoration.shadow.enabled"), dim = get("decoration.dim_inactive") }
+    end
+    hl.exec_cmd("sleep 2; hyprctl eval '__gameBase()'")
 end
 
 -- ── AUTOSCROLL (middle button, like Windows) ─────────────────────────
