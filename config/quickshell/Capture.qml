@@ -40,17 +40,52 @@ Scope {
     property real now: Date.now() / 1000
     property string flash: ""            // "saved" for a moment after Save
     property string page: "main"         // main | settings
+    property bool instant: false         // page change without animation (on open)
+    // page swap: the outgoing page slides out and is gone in 100 ms; the incoming one starts at 90 ms and slides in (210 ms)
+    onPageChanged: {
+        if (instant) return;
+        const toSet = page === "settings";
+        swapAnim.stop();
+        swapAnim.outP = toSet ? mainPage : setPage; swapAnim.outT = toSet ? mainTr : setTr;
+        swapAnim.inP = toSet ? setPage : mainPage;  swapAnim.inT = toSet ? setTr : mainTr;
+        swapAnim.dir = toSet ? 1 : -1;
+        swapAnim.inP.opacity = 0; swapAnim.inT.x = 36 * swapAnim.dir;
+        swapAnim.start();
+    }
+    ParallelAnimation {
+        id: swapAnim
+        property Item outP: null
+        property var outT: null
+        property Item inP: null
+        property var inT: null
+        property real dir: 1
+        ParallelAnimation {
+            NumberAnimation { target: swapAnim.outP; property: "opacity"; to: 0; duration: 100 * Cfg.anim; easing.type: Easing.InQuad }
+            NumberAnimation { target: swapAnim.outT; property: "x"; to: -36 * swapAnim.dir; duration: 100 * Cfg.anim; easing.type: Easing.InQuad }
+        }
+        SequentialAnimation {
+            PauseAnimation { duration: 90 * Cfg.anim }
+            ParallelAnimation {
+                NumberAnimation { target: swapAnim.inP; property: "opacity"; to: 1; duration: 190 * Cfg.anim; easing.type: Easing.OutCubic }
+                NumberAnimation { target: swapAnim.inT; property: "x"; to: 0; duration: 210 * Cfg.anim; easing.type: Easing.OutCubic }
+            }
+        }
+    }
     property string note: ""             // settings: "replay restarted" for a moment
     readonly property string covering: drop.covering
     // the shape grows / shrinks between the pages (DropPanel redraws it on every height)
     readonly property real mainH: 22 + 84 + 36 + 67 + 24
     readonly property real setH: 22 + setPage.implicitHeight + 24
     property real panelH: page === "settings" ? setH : mainH
-    Behavior on panelH { NumberAnimation { duration: 300 * Cfg.anim; easing.type: Easing.OutCubic } }
+    Behavior on panelH { enabled: !cap.instant; NumberAnimation { duration: 280 * Cfg.anim; easing.type: Easing.OutCubic } }
 
     function open(asTest) {
-        test = !!asTest; pickScreen(); refresh(); listRecent();
-        flash = ""; kb = false; cur = null; hot = null; page = "main"; shown = true;
+        test = !!asTest; pickScreen();
+        flash = ""; kb = false; cur = null; hot = null;
+        instant = true; page = "main"; instant = false;      // reopened after closing on settings: no swap animation
+        swapAnim.stop(); mainPage.opacity = 1; mainTr.x = 0; setPage.opacity = 0; setTr.x = 0;
+        shown = true;
+        refresh(); recentSoonOpen.restart();     // processes start after the first frames of the animation
     }
     function close() { shown = false; }
     function toggle() { if (shown) close(); else open(false); }
@@ -59,6 +94,25 @@ Scope {
     function openSettings() { if (!shown) open(false); cur = null; hot = null; page = "settings"; }
     function back() { cur = null; hot = null; page = "main"; }
 
+    // frame-time probe (checks): perf open|swap|close starts it, perfResult reads the frame gaps of the last 700 ms
+    property var perfGaps: []
+    property real perfLast: 0
+    FrameAnimation {
+        id: perfFa; running: false
+        onTriggered: { const n = Date.now(); if (cap.perfLast) cap.perfGaps.push(n - cap.perfLast); cap.perfLast = n; }
+    }
+    Timer { id: perfStop; interval: 700; onTriggered: perfFa.running = false }
+    function perf(what) {
+        perfGaps = []; perfLast = 0; perfFa.running = true; perfStop.restart();
+        if (what === "open") { open(true); const sc = Quickshell.screens.find(x => x.name === "DP-1"); if (sc) screen0 = sc; } else if (what === "swap") { if (page === "main") openSettings(); else back(); } else close();
+    }
+    function perfResult() {
+        const g = perfGaps.slice().sort((a, b) => a - b);
+        if (!g.length) return "no frames";
+        const avg = g.reduce((a, b) => a + b, 0) / g.length;
+        return "frames " + g.length + " avg " + avg.toFixed(1) + " ms  p95 " + g[Math.floor(g.length * 0.95)] + "  max " + g[g.length - 1] + "  >25ms: " + g.filter(x => x > 25).length;
+    }
+
     IpcHandler {
         target: "capture"
         function toggle(): void { cap.toggle(); }
@@ -66,13 +120,15 @@ Scope {
         function close(): void { cap.close(); }
         function settings(): void { cap.openSettings(); }
         // checks
+        function perf(what: string): void { cap.perf(what); }
+        function perfResult(): string { return cap.perfResult(); }
         function page(p: string): void { if (p === "settings") cap.openSettings(); else cap.back(); }
         function test(scr: string): void { cap.open(true); const sc = Quickshell.screens.find(x => x.name === scr); if (sc) cap.screen0 = sc; }
         function nav(dir: string): string { cap.move(dir); return cap.cur ? cap.cur.name : "none"; }
         function press(): string { const c = cap.cur || cap.navList()[0]; if (c) c.act(); return c ? c.name : "none"; }
         function state(): string {
             return JSON.stringify({ shown: cap.shown, replay: cap.replayOn, fill: Math.round(cap.filled), of: cap.total,
-                record: cap.recordOn, secs: cap.recordSecs, audio: cap.cfg.audio, page: cap.page, note: cap.note, cur: cap.cur ? cap.cur.name : "",
+                record: cap.recordOn, secs: cap.recordSecs, audio: cap.cfg.audio, page: cap.page, note: cap.note, op: [mainPage.opacity.toFixed(2), setPage.opacity.toFixed(2)], cur: cap.cur ? cap.cur.name : "",
                 tip: cap.tipItem ? cap.tipItem.tip : "", recent: cap.recent.map(r => r.f.split("/").pop()) });
         }
     }
@@ -157,11 +213,16 @@ Scope {
             "  [ -s \"$t\" ] || timeout 8 ffmpeg -loglevel error -y -ss 1 -i \"$f\" -frames:v 1 -vf scale=240:-1 \"$t\" </dev/null\n" +
             "  printf 'v\\t%s\\t%s\\n' \"$f\" \"$t\" ;;\n *) printf 'i\\t%s\\t%s\\n' \"$f\" \"$f\" ;; esac; done", "sh", cap.vidDir, cap.shotDir]
         stdout: StdioCollector {
-            onStreamFinished: cap.recent = this.text.trim().split("\n").filter(x => x).map(l => { const p = l.split("\t"); return { v: p[0] === "v", f: p[1], t: p[2] }; })
+            onStreamFinished: {
+                const r = this.text.trim().split("\n").filter(x => x).map(l => { const p = l.split("\t"); return { v: p[0] === "v", f: p[1], t: p[2] }; });
+                if (JSON.stringify(r) !== JSON.stringify(cap.recent)) cap.recent = r;     // same list: delegates and pictures stay
+            }
         }
     }
     function listRecent() { if (!recentProc.running) recentProc.running = true; }
+    Component.onCompleted: listRecent()          // ready before the first open
     Timer { id: recentSoon; interval: 3500; onTriggered: cap.listRecent() }
+    Timer { id: recentSoonOpen; interval: 400; onTriggered: cap.listRecent() }
 
     property var screen0: Quickshell.screens[0]
     function pickScreen() {
@@ -356,6 +417,10 @@ Scope {
         anchorX: -1
         boxW: 760
         boxH: Math.round(cap.panelH)
+        winH: Math.max(cap.mainH, cap.setH)   // fixed: the surface is never resized while the shape animates
+        contentFrom: 0.15                     // the content comes with the shape (clipped to it), not after it
+        clipToShape: true
+        // fastShape stays off: the FBO canvas left ghost frames (both pages seen at once)
         radius: 26
         ns: "capture"
         grabFocus: !cap.test
@@ -379,10 +444,10 @@ Scope {
             Item {
             id: mainPage
             width: parent.width; height: cap.mainH - 46
-            opacity: cap.page === "main" ? 1 : 0
+            // swap: see swapAnim (explicit - Behaviors read their durations before "on" had updated: both pages overlapped)
+            opacity: 1
             visible: opacity > 0.01
-            Behavior on opacity { NumberAnimation { duration: 200 * Cfg.anim } }
-            transform: Translate { x: cap.page === "main" ? 0 : -40; Behavior on x { NumberAnimation { duration: 300 * Cfg.anim; easing.type: Easing.OutCubic } } }
+            transform: Translate { id: mainTr }
 
             // ═════ Instant Replay ═════
             Item {
@@ -579,7 +644,7 @@ Scope {
                                     ClippingRectangle {
                                         anchors.fill: parent; radius: 11; color: "transparent"
                                         Image { id: tImg; anchors.fill: parent; source: "file://" + th.modelData.t; fillMode: Image.PreserveAspectCrop
-                                                sourceSize.width: 240; asynchronous: true; cache: false }
+                                                sourceSize.width: 160; asynchronous: true; cache: true }
                                     }
                                     Rectangle {     // hover / pick ring over the picture
                                         anchors.fill: parent; radius: 11; color: "transparent"
@@ -605,10 +670,9 @@ Scope {
                 width: parent.width
                 implicitHeight: 44 + Math.max(leftCol.implicitHeight, rightCol.implicitHeight)
                 height: implicitHeight
-                opacity: cap.page === "settings" ? 1 : 0
+                opacity: 0
                 visible: opacity > 0.01
-                Behavior on opacity { NumberAnimation { duration: 220 * Cfg.anim } }
-                transform: Translate { x: cap.page === "settings" ? 0 : 40; Behavior on x { NumberAnimation { duration: 300 * Cfg.anim; easing.type: Easing.OutCubic } } }
+                transform: Translate { id: setTr }
                 function split() { return mapToItem(null, width / 2, 0).x; }
 
                 Row {

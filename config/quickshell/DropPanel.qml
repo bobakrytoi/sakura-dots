@@ -23,6 +23,12 @@ Scope {
     property string ns: "drop"                // layer namespace (hyprland blurs behind the listed ones)
     property color fill: Cfg.glass          // = TopBar.fill (that one draws the shape at the top)
     property bool grabFocus: true             // false: shows without taking the keyboard (look checks)
+    // smoothness knobs (default = the old behaviour):
+    property int winH: boxH                   // window height; a panel whose box grows/shrinks keeps it at its largest, so the
+                                              // surface is not resized on every frame (only the shape is redrawn)
+    property real contentFrom: 0.55           // grow value where the content starts to fade in
+    property bool clipToShape: false          // clip the content to the shape while it morphs (content shows early, never outside)
+    property bool fastShape: false            // Canvas FBO instead of a CPU image - DON'T: on this setup it leaves ghosts of old frames on screen
 
     property bool barDown: false
     FileView { path: Quickshell.env("HOME") + "/.config/sakura/barpos"; watchChanges: true; onFileChanged: reload()
@@ -48,7 +54,7 @@ Scope {
         screen: dp.screen0
         anchors { top: !dp.atBottom; bottom: dp.atBottom; left: true; right: true }    // the bar's shape is wider than the box
         margins.bottom: 76
-        implicitHeight: dp.boxH
+        implicitHeight: dp.winH
         color: "transparent"
         exclusionMode: ExclusionMode.Ignore
         WlrLayershell.layer: WlrLayer.Overlay
@@ -61,21 +67,26 @@ Scope {
         property real grow: dp.shown ? 1 : 0
         Behavior on grow { NumberAnimation { duration: 340 * Cfg.anim; easing.type: Easing.OutCubic } }
 
+        // the shape right now (top: the bar morphing into the box), null above the dock
+        readonly property var geo: {
+            if (dp.atBottom || !dp.topBar || !dp.fromGeo) return null;
+            const mid = dp.dropX + dp.boxW / 2;
+            const to = { xl: dp.dropX, xr: dp.dropX + dp.boxW, x0: mid - 10, x1: mid + 10, wh: dp.boxH, d: dp.boxH, r: dp.radius };
+            return dp.topBar.lerpGeo(dp.fromGeo, to, win.grow);
+        }
         Canvas {
             anchors.fill: parent
-            readonly property string key: [win.grow, width, height, box.x, dp.boxW, dp.fromGeo ? dp.fromGeo.xl : 0, Cfg.glass].join(",")
+            renderTarget: dp.fastShape ? Canvas.FramebufferObject : Canvas.Image
+            readonly property string key: [win.grow, width, height, dp.dropX, dp.boxW, dp.boxH, dp.fromGeo ? dp.fromGeo.xl : 0, Cfg.glass].join(",")
             onKeyChanged: requestPaint()
             onPaint: {
                 const ctx = getContext("2d");
                 ctx.reset();
-                if (!dp.atBottom && dp.topBar && dp.fromGeo) {
-                    const mid = box.x + box.width / 2;
-                    const to = { xl: box.x, xr: box.x + box.width, x0: mid - 10, x1: mid + 10, wh: height, d: height, r: dp.radius };
-                    dp.topBar.drawShape(ctx, dp.topBar.lerpGeo(dp.fromGeo, to, win.grow));
-                } else {      // above the dock (bar at the bottom): a rounded card growing up from the bottom
-                    const h = 30 + (height - 30) * win.grow;
+                if (win.geo) dp.topBar.drawShape(ctx, win.geo);
+                else {        // above the dock (bar at the bottom): a rounded card growing up from the bottom
+                    const h = 30 + (dp.boxH - 30) * win.grow;
                     ctx.beginPath();
-                    ctx.roundedRect(box.x, height - h, box.width, h, dp.radius, dp.radius);
+                    ctx.roundedRect(dp.dropX, height - h, dp.boxW, h, dp.radius, dp.radius);
                     ctx.fillStyle = dp.fill;
                     ctx.fill();
                 }
@@ -83,11 +94,21 @@ Scope {
         }
 
         Item {
-            id: box
-            x: dp.dropX; width: dp.boxW; height: dp.boxH
-            opacity: Math.max(0, (win.grow - 0.55) / 0.45)
-            focus: dp.shown
-            Keys.onEscapePressed: dp.closeRequested()
+            id: clipper
+            readonly property bool on: dp.clipToShape && !!win.geo
+            x: on ? win.geo.xl : 0
+            width: on ? win.geo.xr - win.geo.xl : win.width
+            height: on ? Math.min(win.geo.wh, win.height) : win.height
+            clip: on
+            Item {
+                id: box
+                x: dp.dropX - clipper.x
+                y: dp.atBottom ? win.height - dp.boxH : 0
+                width: dp.boxW; height: dp.boxH
+                opacity: Math.max(0, (win.grow - dp.contentFrom) / (1 - dp.contentFrom))
+                focus: dp.shown
+                Keys.onEscapePressed: dp.closeRequested()
+            }
         }
     }
 }
