@@ -40,6 +40,16 @@ for d in local/share/icons/* local/share/sounds/sakura local/share/sakura/ambien
 done
 mkdir -p "$HOME/.local/share/icons"; cp -a local/share/icons/hicolor "$HOME/.local/share/icons/"
 mkdir -p "$HOME/Pictures/Wallpapers"; cp -n wallpapers/* "$HOME/Pictures/Wallpapers/"
+put local/share/kaplya "$HOME/.local/share/kaplya"
+
+# mpv UI: uosc isn't in the repo (it ships 18 MB of helper binaries), take the release it was set up with
+if [ ! -f "$HOME/.config/mpv/scripts/uosc/main.lua" ] && command -v curl >/dev/null; then
+  echo ":: mpv: uosc 5.13.0"
+  tmp=$(mktemp -d)
+  curl -fsSL -o "$tmp/uosc.zip" https://github.com/tomasklaen/uosc/releases/download/5.13.0/uosc.zip \
+    && (cd "$HOME/.config/mpv" && bsdtar -xf "$tmp/uosc.zip" --exclude 'script-opts/*') || echo "   failed, get it from github.com/tomasklaen/uosc"
+  rm -rf "$tmp"
+fi
 
 echo ":: fixing paths for $HOME"
 grep -rlI "__HOME__" "$HOME/.config" "$HOME/.local/share/applications" "$HOME/.local/share/kio" 2>/dev/null \

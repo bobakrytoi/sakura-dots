@@ -58,7 +58,7 @@ import os, re, sys, glob
 H, out = sys.argv[1], sys.argv[2]
 C, B, A = H + "/.config", H + "/.local/bin", H + "/.local/share/applications"
 BASE = "hypr quickshell waybar taskmgr sakura kitty swaync swayosd rofi capture cava fastfetch gtk-3.0 gtk-4.0 qt6ct uwsm starship.toml".split()
-NEVER = {"BraveSoftware", "chromium", "google-chrome", "mozilla", "discord", "vesktop", "Code", "VSCodium", "Slack",
+NEVER = {"BraveSoftware", "chromium", "google-chrome", "mozilla", "discord", "vesktop", "Claude", "Code", "VSCodium", "Slack",
          "TelegramDesktop", "pulse", "systemd", "dconf", "gh", "git", "autostart", "Electron", "obs-studio", "Signal",
          "spotify", "steam", "libreoffice", "JetBrains", "github-copilot", "ibus", "fcitx5", "user-dirs.dirs", "mimeapps.list",
          "pavucontrol.ini", "QtProject.conf", "kdeglobals", "menus", "procps", "htop", "nvim", "go", "yay", "paru"}

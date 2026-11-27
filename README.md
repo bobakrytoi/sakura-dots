@@ -28,6 +28,11 @@ NVIDIA card, other setups should work but I haven't tested much.
 - Sakura Cam: use an iPhone as a webcam through Safari, no app needed (needs v4l2loopback, see config/hypr/scripts/sakura-cam/README.md)
 - Sakura Sound: a separate SoundCloud player (own quickshell config + python backend)
 - task manager, calculator, file converter and archive menus for Dolphin
+- screen-share picker for xdg-desktop-portal-hyprland and a picker for minimized windows, both in quickshell
+- desktop widgets on both monitors, the widget editor works on every screen
+- video player: mpv with uosc + thumbfast (timeline previews), accent follows the wallpaper
+- Dolphin and Kate get a Sakura Kvantum / color scheme / editor theme made from the accent (hypr/scripts/qt-theme.py)
+- kaplya: a liquid blob in each kitty window that stretches and merges when you move windows together
 - accent color is picked from the wallpaper and pushed to kitty, qt6ct, Kvantum, rofi and a Vencord theme
 
 ## Dependencies
@@ -37,7 +42,7 @@ Everything is in `packages.txt` (official repos) and `aur.txt` (AUR). Main ones:
 ```
 hyprland quickshell uwsm qt6-multimedia qt6-5compat kitty rofi swayosd awww cava
 cliphist wl-clipboard grim slurp satty imagemagick ffmpeg mpv yt-dlp gpu-screen-recorder
-papirus-icon-theme inter-font ttf-jetbrains-mono-nerd sddm plymouth
+papirus-icon-theme inter-font ttf-jetbrains-mono-nerd sddm plymouth dolphin kate uv
 ```
 
 ## Install
@@ -67,6 +72,7 @@ Login screen and boot splash need root, so they are a separate step:
 - `config/hypr/monitors.lua` is written by the settings app, there is an example next to it.
 - The weather widget finds your city by IP on first run.
 - Only one wallpaper is included, drop your own into `~/Pictures/Wallpapers`.
+- uosc (the mpv UI) is downloaded by `install.sh`, it isn't in the repo.
 
 ## Layout
 

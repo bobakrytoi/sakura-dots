@@ -1,0 +1,8 @@
+#!/bin/sh
+# kaplya - жидкая капля между окнами терминала (~/.local/share/kaplya)
+D="$HOME/.local/share/kaplya"
+if [ ! -x "$D/venv/bin/python" ]; then
+  echo "kaplya: ставлю numpy в $D/venv…" >&2
+  uv venv -q "$D/venv" && uv pip install -q --python "$D/venv/bin/python" numpy || exit 1
+fi
+exec "$D/venv/bin/python" "$D/kaplya.py" "$@"

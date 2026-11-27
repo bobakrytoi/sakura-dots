@@ -1,0 +1,9 @@
+[Desktop Entry]
+Name=Mullvad VPN
+Comment=Mullvad VPN client
+Exec=__HOME__/.local/bin/mullvad-open
+Terminal=false
+Type=Application
+Icon=mullvad-vpn
+StartupWMClass=mullvad-vpn
+Categories=Network;

@@ -48,10 +48,14 @@ python-gobject
 gnome-keyring
 libsecret
 dolphin
+ffmpegthumbs
+kdegraphics-thumbnailers
+kimageformats
+kate
 7zip
 unzip
 zip
-# music player
+# music + video player (uosc UI is fetched by install.sh)
 mpv
 mpv-mpris
 yt-dlp
@@ -62,6 +66,8 @@ lsp-plugins-lv2
 swh-plugins
 noise-suppression-for-voice
 tesseract
+# kaplya and Sakura Cam make their python venvs with uv
+uv
 # look
 inter-font
 noto-fonts
@@ -75,3 +81,5 @@ adw-gtk-theme
 sddm
 xorg-xrandr
 plymouth
+# optional, the calculator falls back to qalc
+libqalculate
