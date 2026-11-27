@@ -41,6 +41,10 @@ Scope {
     readonly property int textPx: size === "s" ? 11 : size === "l" ? 13 : 12
     readonly property int padX: 10
     readonly property int sW: 24                                                 // S-curve into the edge, as in the bar
+    // soft shape (2026-11-27, «слишком резкий»): a long, gentle S on the inner end instead of the steep 24 px one,
+    // and one round concave ear into the side edge instead of the sharp corner + thin rim down the side
+    readonly property int taper: 64
+    readonly property int sideEar: 26
     // reads as a piece cut out of the screen: nearly opaque dark (≈ the bezel), a thin rim down the side edge
     // and the wallpaper's own corner rounded under the strip
     readonly property int band: 8
@@ -225,8 +229,8 @@ Scope {
             readonly property real screenX: isl.right ? modelData.width - width : 0
 
             anchors { top: !isl.bottom; bottom: isl.bottom; left: !isl.right; right: isl.right }
-            implicitWidth: iw + isl.sW + 260                  // + room for the tip beside it
-            implicitHeight: isl.h + isl.cutR + isl.bandL + isl.earW + 40   // + the rim down the side edge, the tip
+            implicitWidth: iw + isl.taper + 260               // + room for the tip beside it
+            implicitHeight: isl.h + isl.sideEar + 40          // + the ear into the side edge, the tip
             exclusionMode: ExclusionMode.Ignore
             color: "transparent"
             WlrLayershell.layer: WlrLayer.Top
@@ -258,19 +262,19 @@ Scope {
                 onPaint: {
                     const ctx = getContext("2d");
                     ctx.reset();
-                    const W = width, H = height, k = 0.5523, ew = isl.earW, s = isl.sW;
-                    const b = isl.band, R = isl.cutR, L = isl.bandL * iwin.p;
+                    const W = width, H = height, k = 0.5523;
                     const X = x => isl.right ? W - x : x, Y = y => isl.bottom ? H - y : y;
-                    const w = iwin.iw * iwin.p, h = isl.h;
+                    const w = iwin.iw * iwin.p, h = isl.h, T = isl.taper, E = isl.sideEar * iwin.p;
                     if (w < 1) return;
                     ctx.beginPath();
                     ctx.moveTo(X(0), Y(0));
-                    ctx.lineTo(X(w + s), Y(0));
-                    ctx.bezierCurveTo(X(w + s / 2), Y(0), X(w + s / 2), Y(h), X(w), Y(h));            // S-curve into the edge
-                    ctx.lineTo(X(b + R), Y(h));
-                    ctx.bezierCurveTo(X(b + R - R * k), Y(h), X(b), Y(h + R - R * k), X(b), Y(h + R)); // the wallpaper's corner, rounded
-                    ctx.lineTo(X(b), Y(h + R + L));
-                    ctx.bezierCurveTo(X(b), Y(h + R + L + ew * k), X(0), Y(h + R + L + ew - ew * k), X(0), Y(h + R + L + ew)); // the rim melts into the side
+                    ctx.lineTo(X(w + T), Y(0));
+                    // the inner end: one long, flat S from the screen edge down to the strip (handles stretched along
+                    // the edge and along the strip, so it leaves and lands tangentially - no steep drop)
+                    ctx.bezierCurveTo(X(w + T * 0.42), Y(0), X(w + T * 0.30), Y(h), X(w - 2), Y(h));
+                    ctx.lineTo(X(E), Y(h));
+                    // into the side edge: a round concave ear (quarter circle), the strip just flows down into the edge
+                    ctx.bezierCurveTo(X(E - E * k), Y(h), X(0), Y(h + E - E * k), X(0), Y(h + E));
                     ctx.closePath();
                     ctx.fillStyle = isl.fillC;
                     ctx.fill();
@@ -281,7 +285,7 @@ Scope {
                 id: box
                 x: isl.right ? parent.width - width : 0
                 y: isl.bottom ? parent.height - height : 0
-                width: iwin.iw * iwin.p + isl.sW / 2; height: isl.h
+                width: iwin.iw * iwin.p + isl.taper / 3; height: isl.h
                 clip: true
                 Row {
                     id: row

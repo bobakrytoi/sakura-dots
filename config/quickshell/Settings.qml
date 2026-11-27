@@ -37,6 +37,7 @@ Scope {
         target: "settings"
         function open(p: string): void { st.openPage(p === "" ? "sound" : p); }
         function toggle(): void { st.toggle(); }
+        function scrollY(): string { return Math.round(contentWheel.flick.contentY) + " / " + Math.round(contentWheel.maxY); }   // for tests
     }
 
     // ── pages ───────────────────────────────────────────────────
@@ -444,11 +445,6 @@ Scope {
 
     // ── reusable bits ───────────────────────────────────────────
     // wheel: ~140 px a notch (touchpads: their own pixels, a bit faster)
-    function wheelScroll(f, e) {
-        if (!f) return;
-        const dy = e.pixelDelta.y !== 0 ? e.pixelDelta.y * 1.6 : e.angleDelta.y / 120 * 140;
-        f.contentY = Math.max(0, Math.min(Math.max(0, f.contentHeight - f.height), f.contentY - dy));
-    }
     // a thin scrollbar for a Flickable (sits over its right edge; drag the thumb or click the track)
     component VBar: Item {
         id: vb
@@ -675,7 +671,7 @@ Scope {
             Field { id: search; x: 16; y: 62; width: side.width - 32; hint: st.t("Search settings"); onTextChanged: st.query = text }
 
             VBar { flick: navFlick; z: 10 }
-            MouseArea { anchors.fill: navFlick; z: 9; acceptedButtons: Qt.NoButton; onWheel: w => st.wheelScroll(navFlick, w) }
+            WheelScroll { id: navWheel; anchors.fill: navFlick; z: 9; flick: navFlick }
             Flickable {
                 anchors { top: search.bottom; topMargin: 10; left: parent.left; right: parent.right; bottom: parent.bottom; bottomMargin: 10 }
                 id: navFlick
@@ -710,7 +706,7 @@ Scope {
                                         text: st.t(modelData.label); elide: Text.ElideRight; font.family: st.fUi; font.pixelSize: 13; font.weight: sel ? Font.Bold : Font.Normal
                                         color: sel ? st.cAccFg : st.cFg }
                                     MouseArea { id: na; anchors.fill: parent; hoverEnabled: true; cursorShape: Qt.PointingHandCursor
-                                        onClicked: { st.page = modelData.id; st.refreshAll(); content.contentY = 0; } }
+                                        onClicked: { st.page = modelData.id; st.refreshAll(); contentWheel.jump(0); } }
                                 }
                             }
                         }
@@ -720,7 +716,7 @@ Scope {
         }
 
         VBar { flick: content; z: 10 }
-        MouseArea { anchors.fill: content; z: 9; acceptedButtons: Qt.NoButton; onWheel: w => st.wheelScroll(content, w) }   // wheel only; clicks and hover pass through
+        WheelScroll { id: contentWheel; anchors.fill: content; z: 9; flick: content }   // wheel only (browser-like, eased); clicks and hover pass through
         Flickable {
             id: content
             anchors { left: side.right; right: parent.right; top: parent.top; bottom: parent.bottom }

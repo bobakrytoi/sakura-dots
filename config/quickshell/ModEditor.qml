@@ -94,7 +94,7 @@ Item {
                 id: stage
                 readonly property real need: me.kind === "bar"
                     ? 2 * (notch.width / 2 + 24 + 4 + Math.max(leftSlot.width, rightSlot.width) + 9 + 22 + 14)
-                    : islSlot.width + 20 + 24 + 40
+                    : islSlot.width + 20 + 64 + 40
                 readonly property real k: Math.min(1, pv.width / Math.max(1, need))
                 width: pv.width / k; height: pv.height / k
                 scale: k; transformOrigin: Item.TopLeft
@@ -130,15 +130,14 @@ Item {
                             ctx.fill();
                         } else {
                             const W = width, H = height, X = x => me.rightCorner ? W - x : x, Y = y => me.bottomCorner ? H - y : y;
-                            const w = Math.max(40, islSlot.width + 20), h = 36, s = 24, b = 8, R = 22, Lb = 30;
+                            // = CornerIsland.qml (soft shape): a long flat S on the inner end, one round ear into the side edge
+                            const w = Math.max(40, islSlot.width + 20), h = 36, T = 64, E = 26;
                             ctx.beginPath();
                             ctx.moveTo(X(0), Y(0));
-                            ctx.lineTo(X(w + s), Y(0));
-                            ctx.bezierCurveTo(X(w + s / 2), Y(0), X(w + s / 2), Y(h), X(w), Y(h));
-                            ctx.lineTo(X(b + R), Y(h));
-                            ctx.bezierCurveTo(X(b + R - R * k), Y(h), X(b), Y(h + R - R * k), X(b), Y(h + R));
-                            ctx.lineTo(X(b), Y(h + R + Lb));
-                            ctx.bezierCurveTo(X(b), Y(h + R + Lb + ew * k), X(0), Y(h + R + Lb + ew - ew * k), X(0), Y(h + R + Lb + ew));
+                            ctx.lineTo(X(w + T), Y(0));
+                            ctx.bezierCurveTo(X(w + T * 0.42), Y(0), X(w + T * 0.30), Y(h), X(w - 2), Y(h));
+                            ctx.lineTo(X(E), Y(h));
+                            ctx.bezierCurveTo(X(E - E * k), Y(h), X(0), Y(h + E - E * k), X(0), Y(h + E));
                             ctx.closePath();
                             ctx.fillStyle = Qt.rgba(0.05, 0.055, 0.08, 0.92);
                             ctx.fill();
