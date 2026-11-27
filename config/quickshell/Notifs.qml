@@ -45,19 +45,45 @@ Singleton {
         persistenceSupported: true
         onNotification: n => {
             n.tracked = true;
-            ns.unread += 1;
-            const critical = n.urgency === NotificationUrgency.Critical;
+            n.closed.connect(() => { ns.popups = ns.popups.filter(p => p !== n); });
             const app = n.appName || "";
             if (app && !ns.seenApps.includes(app)) ns.seenApps = ns.seenApps.concat([app]);
+            // Replay guard (bug: after a shell reload every old notification popped up again with a sound each).
+            // keepOnReload re-emits all tracked notifications with lastGeneration = true → straight to the center,
+            // silently. Same for anything in the first 3 s after start, and for exact repeats of one already there.
+            const key = app + "\u0001" + (n.summary || "") + "\u0001" + (n.body || "");
+            const dup = server.trackedNotifications.values.find(o => o !== n && (o.appName || "") + "\u0001" + (o.summary || "") + "\u0001" + (o.body || "") === key);
+            if (n.lastGeneration || Date.now() - ns.startedAt < 3000) return;
+            if (dup) { dup.tracked = false; return; }      // keep the fresh copy (its actions are live), drop the old one, no fuss
+            ns.unread += 1;
+            const critical = n.urgency === NotificationUrgency.Critical;
             if (ns.muted.includes(app) && !critical) return;
             if (!ns.silent || critical) {
                 ns.popups = [n].concat(ns.popups.filter(p => p !== n)).slice(0, 5);
-                if (n.urgency !== NotificationUrgency.Low)
-                    Quickshell.execDetached([Quickshell.env("HOME") + "/.config/hypr/scripts/sfx.sh", "notify"]);
+                if (n.urgency !== NotificationUrgency.Low) ns.chime();
             }
-            n.closed.connect(() => { ns.popups = ns.popups.filter(p => p !== n); });
         }
     }
+    // at most one notification sound per 300 ms burst
+    readonly property real startedAt: Date.now()
+    property real lastChime: 0
+    function chime() {
+        const t = Date.now();
+        if (t - lastChime < 300) return;
+        lastChime = t;
+        Quickshell.execDetached([Quickshell.env("HOME") + "/.config/hypr/scripts/sfx.sh", "notify"]);
+    }
+    // unread count and arrival times survive a shell reload (the notifications themselves do, via keepOnReload)
+    PersistentProperties {
+        id: keep
+        reloadableId: "sakura-notifs"
+        property int unread: 0
+        property var times: ({})
+        onLoaded: { ns.unread += keep.unread; ns.times = Object.assign({}, ns.times, keep.times); ns.keepReady = true; }
+    }
+    property bool keepReady: false
+    onUnreadChanged: if (keepReady) keep.unread = unread
+    onTimesChanged: if (keepReady) keep.times = times
     function hidePopup(n) { popups = popups.filter(p => p !== n); }
     function dismiss(n) { hidePopup(n); n.dismiss(); }
     function clearAll() { popups = []; for (const n of server.trackedNotifications.values.slice()) n.dismiss(); unread = 0; }
@@ -92,5 +118,6 @@ Singleton {
         target: "notifs"
         function dnd(): void { ns.toggleDnd(); }
         function clear(): void { ns.clearAll(); }
+        function count(): string { return ns.count + " in center, " + ns.unread + " unread, " + ns.popups.length + " popups"; }
     }
 }
