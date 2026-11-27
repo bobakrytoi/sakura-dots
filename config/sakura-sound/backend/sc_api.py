@@ -92,7 +92,8 @@ class SC:
     def init(self, force=False):
         """(Re)load client_id and the oauth token. Safe to call often."""
         with self._lock:
-            if not force and self.client_id and time.time() - self._cookies_at < 1800:
+            # signed in: re-read cookies every 30 min; guest: retry every minute (the keyring may not be ready at login)
+            if not force and self.client_id and time.time() - self._cookies_at < (1800 if self.token else 60):
                 return
             if force:
                 self._ydl = None
@@ -122,6 +123,8 @@ class SC:
                 self.log("cookies: %s" % self.browser_failed)
                 self._ydl = None                  # next call starts clean
             self.token = tok
+            if not tok:
+                self._ydl = None                  # rebuild next time: cookie_opt() picks the keyring once it answers
             self._cookies_at = time.time()
 
     def refresh_client_id(self):

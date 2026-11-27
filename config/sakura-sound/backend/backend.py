@@ -337,11 +337,16 @@ class Backend:
             return
         err = getattr(self.sc, "browser_failed", None) or ""
         if me:
+            self._auth_retries = 0
             emit("auth", ok=True, browser=self.sc.browser or "",
                  user=n_user(me), go=bool((me.get("consumer_subscription") or {}).get("product")),
                  likes=me.get("likes_count") or 0)
         else:
             emit("auth", ok=False, user=None, browser=self.sc.browser or "", err=err)
+            # still a guest: try again in a minute (keyring locked / browser not started yet at login)
+            if self.sc.browser and getattr(self, "_auth_retries", 0) < 30:
+                self._auth_retries = getattr(self, "_auth_retries", 0) + 1
+                threading.Timer(60, lambda: self.pool.submit(self.check_auth)).start()
 
     # ── state out ──────────────────────────────────────────────
     def emit_state(self, force=False):
