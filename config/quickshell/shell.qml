@@ -34,7 +34,7 @@ ShellRoot {
     readonly property var screenTime: ScreenTime      // starts counting (ScreenTime.qml)
     readonly property var devices: Devices            // polls wireless device batteries, says low / connect in the notch (Devices.qml)
     Switcher { id: switcher }
-    Capture { id: capture }
+    Capture { id: capture; topBar: topBar }           // Alt+Z: flows out of the notch (DropPanel)
     Media { id: media }
     Dashboard { id: dashboard; topBar: topBar }
     Mixer { id: mixer; topBar: topBar }
@@ -66,7 +66,7 @@ ShellRoot {
     HotCorners { id: hotCorners; converter: converter }
     Greeting { id: greeting }
     NotifCenter { id: notifCenter; topBar: topBar; settings: settings }
-    TopBar { id: topBar; genie: genie; tray: trayFlyout; dashboard: dashboard; mixer: mixer; netMenu: netMenu; powerMenu: powerMenu; notifCenter: notifCenter; camPanel: sakuraCam }
+    TopBar { id: topBar; genie: genie; tray: trayFlyout; dashboard: dashboard; mixer: mixer; netMenu: netMenu; powerMenu: powerMenu; notifCenter: notifCenter; camPanel: sakuraCam; capturePanel: capture }
     Genie { id: genie; topBar: topBar }
     CornerIsland { id: cornerIsland; topBar: topBar; settings: settings }
 

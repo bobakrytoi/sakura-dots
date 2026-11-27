@@ -23,6 +23,7 @@ Scope {
     property var powerMenu: null
     property var notifCenter: null          // NotifCenter.qml (our own notifications, no swaync)
     property var camPanel: null             // SakuraCam.qml (iPhone webcam), flows out of the notch
+    property var capturePanel: null         // Capture.qml (Alt+Z), flows out of the notch
     function openUnder(menu, bar, btn) { if (menu) menu.toggleAt(bar.screenName, btn.mapToItem(null, btn.width / 2, 0).x); }
 
     readonly property int deep: 40          // notch height (= the space reserved at the top)
@@ -494,7 +495,7 @@ Scope {
             // it (see drawShape), so the bar itself is gone meanwhile - at once, else two shapes would show
             readonly property bool dropped:
                 (!!tb.dashboard && tb.dashboard.covering === modelData.name) ||
-                [tb.tray, tb.mixer, tb.netMenu, tb.powerMenu, tb.notifCenter, tb.camPanel].some(m => !!m && m.covering === modelData.name)
+                [tb.tray, tb.mixer, tb.netMenu, tb.powerMenu, tb.notifCenter, tb.camPanel, tb.capturePanel].some(m => !!m && m.covering === modelData.name)
             onDroppedChanged: if (dropped) { open = false; hotItem = null; tipText = ""; }
 
             // a gulp: the notch swells for a moment and springs back (Genie.qml: a window flies in or out of it)

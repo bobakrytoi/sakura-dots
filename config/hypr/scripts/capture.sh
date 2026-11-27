@@ -42,6 +42,10 @@ audio_args() {
     *)            echo "" ;;
   esac
 }
+vcodec() {   # "codec" in config.json: auto (gsr picks) | h264 | hevc | av1 …
+  local c; c=$(cfg codec)
+  case "$c" in ""|auto) echo "" ;; *) echo "-k $c" ;; esac
+}
 alive() { [ -f "$RUN/$1.pid" ] && kill -0 "$(cat "$RUN/$1.pid")" 2>/dev/null; }
 bar()   { pkill -RTMIN+9 waybar 2>/dev/null; true; }
 
@@ -57,7 +61,7 @@ case "$1" in
     alive replay && exit 0
     dir=$(cfg folder)/Replays; mkdir -p "$dir"
     # shellcheck disable=SC2046
-    setsid gpu-screen-recorder -w "$(monitor)" -f "$(cfg fps)" -q "$(cfg quality)" -c mp4 -ac aac $(audio_args) \
+    setsid gpu-screen-recorder -w "$(monitor)" -f "$(cfg fps)" -q "$(cfg quality)" $(vcodec) -c mp4 -ac aac $(audio_args) \
       -r "$(cfg replaySeconds)" -sc "$HOME/.config/hypr/scripts/capture-saved.sh" -o "$dir" >"$RUN/replay.log" 2>&1 &
     echo $! > "$RUN/replay.pid"; sleep 0.3; bar
     notify-send -a "Capture" "Instant Replay on" "Last $(cfg replaySeconds)s are kept · $(cfg hotkeys.replaySave) to save" ;;
@@ -76,7 +80,7 @@ case "$1" in
       dir=$(cfg folder)/Recordings; mkdir -p "$dir"
       f="$dir/$(date +%Y-%m-%d_%H-%M-%S).mp4"
       # shellcheck disable=SC2046
-      setsid gpu-screen-recorder -w "$(monitor)" -f "$(cfg fps)" -q "$(cfg quality)" -c mp4 -ac aac $(audio_args) \
+      setsid gpu-screen-recorder -w "$(monitor)" -f "$(cfg fps)" -q "$(cfg quality)" $(vcodec) -c mp4 -ac aac $(audio_args) \
         -sc "$HOME/.config/hypr/scripts/capture-saved.sh" -o "$f" >"$RUN/record.log" 2>&1 &
       echo $! > "$RUN/record.pid"; date +%s > "$RUN/record.start"; sleep 0.3; bar
       notify-send -a "Capture" "Recording started" "$(cfg hotkeys.record) to stop"

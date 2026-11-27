@@ -22,6 +22,7 @@ Scope {
     property int radius: 22
     property string ns: "drop"                // layer namespace (hyprland blurs behind the listed ones)
     property color fill: Cfg.glass          // = TopBar.fill (that one draws the shape at the top)
+    property bool grabFocus: true             // false: shows without taking the keyboard (look checks)
 
     property bool barDown: false
     FileView { path: Quickshell.env("HOME") + "/.config/sakura/barpos"; watchChanges: true; onFileChanged: reload()
@@ -52,9 +53,9 @@ Scope {
         exclusionMode: ExclusionMode.Ignore
         WlrLayershell.layer: WlrLayer.Overlay
         WlrLayershell.namespace: dp.ns
-        WlrLayershell.keyboardFocus: WlrKeyboardFocus.OnDemand
+        WlrLayershell.keyboardFocus: dp.grabFocus ? WlrKeyboardFocus.OnDemand : WlrKeyboardFocus.None
         mask: Region { item: box }
-        HyprlandFocusGrab { windows: [ win ]; active: dp.shown; onCleared: dp.closeRequested() }
+        HyprlandFocusGrab { windows: [ win ]; active: dp.shown && dp.grabFocus; onCleared: dp.closeRequested() }
 
         // 0 = the bar's shape, 1 = the whole box; the content fades in at the end (and out first on close)
         property real grow: dp.shown ? 1 : 0

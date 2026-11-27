@@ -12,5 +12,6 @@
     "replayToggle": "ALT + SHIFT + F9",
     "record": "ALT + F9",
     "screenshot": "ALT + F1"
-  }
+  },
+  "codec": "auto"
 }
